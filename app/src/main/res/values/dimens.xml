@@ -1,0 +1,32 @@
+<resources>
+
+    <!-- Screen -->
+    <dimen name="screen_padding">16dp</dimen>
+    <dimen name="title_margin_top">24dp</dimen>
+    <dimen name="margin_24">24dp</dimen>
+
+    <!-- Cards -->
+    <dimen name="card_radius">16dp</dimen>
+    <dimen name="card_margin_vertical">10dp</dimen>
+
+    <!-- Icons -->
+    <dimen name="main_icon_padding">12dp</dimen>
+    <dimen name="settings_icon_size">24dp</dimen>
+
+    <!-- Settings -->
+    <dimen name="settings_item_height">56dp</dimen>
+
+    <!-- Text sizes -->
+    <dimen name="text_medium">20sp</dimen>
+    <dimen name="text_large">23sp</dimen>
+
+
+    <!-- Buttons -->
+    <dimen name="button_height">60dp</dimen>
+    <dimen name="button_spacing">10dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+
+
+</resources>
+
