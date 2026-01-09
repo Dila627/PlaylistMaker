@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Backgrounds -->
+    <color name="background_main">#3772E7</color>
+    <color name="blue_main">#3772E7</color>
+    <color name="background_light">#FFFFFF</color>
+    <color name="background_dark">#1A1B22</color>
+
+    <!-- Base colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- Text -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#1A1B22</color>
+    <color name="text_dark">#1A1B22</color>
+
+    <!-- Buttons -->
+    <color name="button_background">#FFFFFF</color>
+    <color name="button_text_dark">#1A1B22</color>
+
+    <!-- Icons -->
+    <color name="icon_primary">#1A1B22</color>
+    <color name="icon_secondary">#9B9B9B</color>
+
+    <!-- Dividers -->
+    <color name="divider">#E6E8EB</color>
+
 </resources>
