@@ -5,6 +5,9 @@
     <dimen name="title_margin_top">24dp</dimen>
     <dimen name="margin_24">24dp</dimen>
 
+    <!-- Common margins -->
+    <dimen name="large_margin">24dp</dimen> <!-- ДОБАВЬ ЭТО -->
+
     <!-- Cards -->
     <dimen name="card_radius">16dp</dimen>
     <dimen name="card_margin_vertical">10dp</dimen>
@@ -20,13 +23,9 @@
     <dimen name="text_medium">20sp</dimen>
     <dimen name="text_large">23sp</dimen>
 
-
     <!-- Buttons -->
     <dimen name="button_height">60dp</dimen>
     <dimen name="button_spacing">10dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
 
-
-
 </resources>
-

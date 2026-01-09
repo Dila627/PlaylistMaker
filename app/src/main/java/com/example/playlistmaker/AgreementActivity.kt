@@ -10,7 +10,8 @@ class AgreementActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_agreement)
 
-        findViewById<ImageView>(R.id.btnBack).setOnClickListener {
+        val backButton = findViewById<ImageView>(R.id.btnBack)
+        backButton.setOnClickListener {
             finish()
         }
     }
