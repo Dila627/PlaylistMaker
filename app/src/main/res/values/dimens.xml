@@ -2,15 +2,16 @@
 
     <!-- Screen -->
     <dimen name="screen_padding">16dp</dimen>
-    <dimen name="title_margin_top">24dp</dimen>
+    <dimen name="title_margin_top">14dp</dimen>
     <dimen name="margin_24">24dp</dimen>
 
+
     <!-- Common margins -->
-    <dimen name="large_margin">24dp</dimen> <!-- ДОБАВЬ ЭТО -->
+    <dimen name="large_margin">24dp</dimen>
 
     <!-- Cards -->
     <dimen name="card_radius">16dp</dimen>
-    <dimen name="card_margin_vertical">10dp</dimen>
+    <dimen name="card_margin_vertical">16dp</dimen>
 
     <!-- Icons -->
     <dimen name="main_icon_padding">12dp</dimen>
@@ -18,6 +19,7 @@
 
     <!-- Settings -->
     <dimen name="settings_item_height">56dp</dimen>
+    <dimen name="settings_item_margin">16dp</dimen>
 
     <!-- Text sizes -->
     <dimen name="text_medium">20sp</dimen>
@@ -27,5 +29,8 @@
     <dimen name="button_height">60dp</dimen>
     <dimen name="button_spacing">10dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="main_card_height">220dp</dimen>
+
 
 </resources>
