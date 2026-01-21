@@ -12,6 +12,10 @@
     <string name="settings_share_app">Share app</string>
     <string name="settings_support">Contact support</string>
     <string name="settings_agreement">User agreement</string>
+    <!-- Share -->
+    <string name="share_app_text">Playlist Maker — app link</string>
+    <string name="share_app_chooser_title">Share app</string>
+
 
     <!-- Question screen -->
 
@@ -21,30 +25,13 @@
     <string name="answer_no">No</string>
     <string name="answer_yes">Yes</string>
 
-    <string name="agreement_title">Agreement</string>
+    <string name="support_email">your_email@example.com</string>
+    <string name="support_subject">Message to the Playlist Maker app developers</string>
+    <string name="support_body">Thank you to the Playlist Maker app developers for such a great app!</string>
 
-    <string name="agreement_text">
-Offer for the provision of additional educational services by Yandex Practicum
-for individuals
+    <string name="agreement_url">https://yandex.ru/legal/praktikum_offer/</string>
 
-This document is valid if published at:
-https://yandex.ru/legal/practicum_offer
-
-Russian Federation, Moscow
-
-1. TERMS
-
-The terms used in this Offer shall have the following meanings:
-
-Authorized addresses — email addresses of each Party.
-The authorized address of the Contractor is the email address specified in Section 11 of the Offer.
-The authorized address of the Student is the email address specified by the Student in the Personal Account.
-
-Introductory course — an initial training Course based on the educational Programs presented on the Service within the Profession or Course selected by the Student, designed for a specific number of hours of independent study, which is provided to the Student once upon registration on the Service free of charge.
-During the Introductory course, the Student is given the opportunity to become familiar with the operation of the Service and to determine the possibility of continuing education within the Full course under the selected Program.
-The exact number of study hours within the Introductory course depends on the Profession or Course chosen by the Student and is defined in the Program published on the Service.
-The maximum duration of the Introductory course is 1 (one) year from the start date of study.
-</string>
-
+    <string name="clear_search">Clearn search list </string>
+    <string name="search_hint">Search</string>
 
 </resources>

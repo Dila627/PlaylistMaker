@@ -1,6 +1,7 @@
 package com.example.playlistmaker
 
 import android.os.Bundle
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 
 class MediaLibraryActivity : AppCompatActivity() {
@@ -8,5 +9,10 @@ class MediaLibraryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_media_library)
+
+        val backButton = findViewById<ImageView>(R.id.btnBack)
+        backButton.setOnClickListener {
+            finish()
+        }
     }
 }

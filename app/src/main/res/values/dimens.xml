@@ -32,5 +32,7 @@
 
     <dimen name="main_card_height">220dp</dimen>
 
+    <dimen name="margin_8">8dp</dimen>
+    <dimen name="margin_12">12dp</dimen>
 
 </resources>

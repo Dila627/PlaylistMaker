@@ -1,22 +1,24 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/blue_main"
     android:orientation="vertical"
-    android:paddingHorizontal="@dimen/screen_padding">
+    android:paddingHorizontal="@dimen/screen_padding"
+    android:paddingTop="@dimen/title_margin_top"
+    android:paddingBottom="@dimen/margin_24">
 
+    <!-- Title -->
     <TextView
         android:id="@+id/tvTitle"
+        style="@style/Text_TitleMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/title_margin_top"
-        android:text="@string/main_title"
-        android:textColor="@color/white"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:text="@string/main_title" />
 
-
+    <!-- Main buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -26,53 +28,23 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSearch"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            style="@style/Button_MainCard"
             android:layout_marginBottom="@dimen/card_margin_vertical"
-            android:layout_weight="1"
             android:text="@string/main_search"
-            android:textAllCaps="false"
-            android:textColor="@color/text_dark"
-            android:textSize="20sp"
-            app:backgroundTint="@color/white"
-            app:cornerRadius="@dimen/card_radius"
-            app:icon="@drawable/ic_search"
-            app:iconGravity="textStart"
-            app:iconPadding="@dimen/main_icon_padding"
-            app:iconTint="@color/text_dark" />
+            app:icon="@drawable/ic_search" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnMedia"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            style="@style/Button_MainCard"
             android:layout_marginBottom="@dimen/card_margin_vertical"
-            android:layout_weight="1"
             android:text="@string/main_media"
-            android:textAllCaps="false"
-            android:textColor="@color/text_dark"
-            android:textSize="20sp"
-            app:backgroundTint="@color/white"
-            app:cornerRadius="@dimen/card_radius"
-            app:icon="@drawable/ic_media"
-            app:iconGravity="textStart"
-            app:iconPadding="@dimen/main_icon_padding"
-            app:iconTint="@color/text_dark" />
+            app:icon="@drawable/ic_media" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSettings"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            style="@style/Button_MainCard"
             android:text="@string/main_settings"
-            android:textAllCaps="false"
-            android:textColor="@color/text_dark"
-            android:textSize="20sp"
-            app:backgroundTint="@color/white"
-            app:cornerRadius="@dimen/card_radius"
-            app:icon="@drawable/ic_settings"
-            app:iconGravity="textStart"
-            app:iconPadding="@dimen/main_icon_padding"
-            app:iconTint="@color/text_dark" />
+            app:icon="@drawable/ic_settings" />
 
     </LinearLayout>
 
