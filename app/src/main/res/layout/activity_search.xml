@@ -19,9 +19,9 @@
             android:id="@+id/btnBack"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:contentDescription="@string/main_search"
             android:src="@drawable/ic_arrow_back"
-            app:tint="@color/text_dark"
-            android:contentDescription="@string/main_search" />
+            app:tint="@color/text_dark" />
 
         <TextView
             android:id="@+id/tvTitle"
@@ -33,50 +33,51 @@
     </LinearLayout>
 
     <!-- Search field -->
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/searchField"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginTop="@dimen/margin_24"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/bg_search_field"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp">
+        android:background="@drawable/bg_search_field">
 
         <!-- Search icon -->
         <ImageView
             android:id="@+id/ivSearchIcon"
             android:layout_width="16dp"
             android:layout_height="16dp"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="12dp"
             android:src="@drawable/ic_search"
-            app:tint="@color/search_icon_tint" />
+            app:tint="@color/search_hint_and_icons" />
 
         <!-- Input -->
         <EditText
             android:id="@+id/etSearch"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="@null"
             android:hint="@string/search_hint"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
             android:maxLines="1"
             android:singleLine="true"
-            android:inputType="text"
-            android:imeOptions="actionSearch"
-            android:textColor="@color/search_text"
-            android:textColorHint="@color/search_hint_color" />
+            android:paddingStart="36dp"
+            android:paddingEnd="36dp"
+            android:textColor="@color/search_input_text"
+            android:textColorHint="@color/search_hint_and_icons" />
 
         <!-- Clear button -->
         <ImageView
             android:id="@+id/ivClear"
             android:layout_width="16dp"
             android:layout_height="16dp"
-            android:src="@drawable/ic_clear"
-            app:tint="@color/search_icon_tint"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="12dp"
             android:contentDescription="@string/clear_search"
-            android:visibility="gone" />
-    </LinearLayout>
+            android:src="@drawable/ic_clear"
+            android:visibility="gone"
+            app:tint="@color/search_hint_and_icons" />
+
+    </FrameLayout>
 
 </LinearLayout>

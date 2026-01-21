@@ -28,6 +28,8 @@
     <color name="search_text">#1A1B22</color>
     <color name="search_hint_color">#9B9B9B</color>
     <color name="search_icon_tint">#9B9B9B</color>
+    <color name="search_hint_and_icons">#AEAFB4</color>
+    <color name="search_input_text">#1A1B22</color>
 
 
 </resources>
