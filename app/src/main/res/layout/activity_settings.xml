@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_light"
+    android:paddingHorizontal="@dimen/screen_padding">
+
+    <ImageView
+        android:id="@+id/btnBack"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="@dimen/title_margin_top"
+        android:contentDescription="@string/settings_title"
+        android:src="@drawable/ic_arrow_back"
+        app:tint="@color/text_dark"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tvSettingsTitle"
+        style="@style/Text_TitleScreen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_12"
+        android:text="@string/settings_title"
+        app:layout_constraintBottom_toBottomOf="@id/btnBack"
+        app:layout_constraintStart_toEndOf="@id/btnBack"
+        app:layout_constraintTop_toTopOf="@id/btnBack" />
+
+    <!-- Dark theme -->
+    <TextView
+        android:id="@+id/tvDarkTheme"
+        style="@style/Text_SettingsItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_24"
+        android:layout_marginEnd="@dimen/margin_8"
+        android:text="@string/settings_dark_theme"
+        app:layout_constraintEnd_toStartOf="@id/switchTheme"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnBack" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchTheme"
+        style="@style/Switch_Settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/tvDarkTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvDarkTheme" />
+
+
+    <!-- Share app -->
+    <TextView
+        android:id="@+id/tvShare"
+        style="@style/Text_SettingsItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_8"
+        android:text="@string/settings_share_app"
+        app:layout_constraintEnd_toStartOf="@id/iconShare"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvDarkTheme" />
+
+    <ImageView
+        android:id="@+id/iconShare"
+        style="@style/Icon_Settings"
+        android:src="@drawable/ic_share"
+        app:layout_constraintBottom_toBottomOf="@id/tvShare"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvShare" />
+
+    <!-- Support -->
+    <TextView
+        android:id="@+id/tvSupport"
+        style="@style/Text_SettingsItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_8"
+        android:text="@string/settings_support"
+        app:layout_constraintEnd_toStartOf="@id/iconSupport"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvShare" />
+
+    <ImageView
+        android:id="@+id/iconSupport"
+        style="@style/Icon_Settings"
+        android:src="@drawable/ic_support"
+        app:layout_constraintBottom_toBottomOf="@id/tvSupport"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvSupport" />
+
+    <!-- Agreement -->
+    <TextView
+        android:id="@+id/tvAgreement"
+        style="@style/Text_SettingsItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_8"
+        android:text="@string/settings_agreement"
+        app:layout_constraintEnd_toStartOf="@id/iconArrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvSupport" />
+
+    <ImageView
+        android:id="@+id/iconArrow"
+        style="@style/Icon_Settings"
+        android:src="@drawable/ic_chevron_right"
+        app:layout_constraintBottom_toBottomOf="@id/tvAgreement"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvAgreement" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

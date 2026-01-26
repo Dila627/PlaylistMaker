@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main -->
+    <string name="main_title">Playlist maker</string>
+    <string name="main_search">Search</string>
+    <string name="main_media">Media Library</string>
+    <string name="main_settings">Settings</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_dark_theme">Dark theme</string>
+    <string name="settings_share_app">Share app</string>
+    <string name="settings_support">Contact support</string>
+    <string name="settings_agreement">User agreement</string>
+    <!-- Share -->
+    <string name="share_app_text">Playlist Maker — app link</string>
+    <string name="share_app_chooser_title">Share app</string>
+
+
+    <!-- Question screen -->
+
+    <string name="question_label">Question:</string>
+    <string name="question_progress">2/10</string>
+    <string name="question_text">Is this movie’s rating higher than 9?</string>
+    <string name="answer_no">No</string>
+    <string name="answer_yes">Yes</string>
+
+    <string name="support_email">your_email@example.com</string>
+    <string name="support_subject">Message to the Playlist Maker app developers</string>
+    <string name="support_body">Thank you to the Playlist Maker app developers for such a great app!</string>
+
+    <string name="agreement_url">https://yandex.ru/legal/praktikum_offer/</string>
+
+    <string name="clear_search">Clearn search list </string>
+    <string name="search_hint">Search</string>
+
+</resources>

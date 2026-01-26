@@ -1,19 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="@color/blue_main"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/screen_padding"
+    android:paddingTop="@dimen/title_margin_top"
+    android:paddingBottom="@dimen/margin_24">
 
+    <!-- Title -->
     <TextView
+        android:id="@+id/tvTitle"
+        style="@style/Text_TitleMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="@string/main_title" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Main buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/margin_24"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSearch"
+            style="@style/Button_MainCard"
+            android:layout_marginBottom="@dimen/card_margin_vertical"
+            android:text="@string/main_search"
+            app:icon="@drawable/ic_search" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMedia"
+            style="@style/Button_MainCard"
+            android:layout_marginBottom="@dimen/card_margin_vertical"
+            android:text="@string/main_media"
+            app:icon="@drawable/ic_media" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSettings"
+            style="@style/Button_MainCard"
+            android:text="@string/main_settings"
+            app:icon="@drawable/ic_settings" />
+
+    </LinearLayout>
+
+</LinearLayout>

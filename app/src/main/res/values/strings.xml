@@ -1,3 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Playlist Maker</string>
+    <!-- App -->
+    <string name="app_name" translatable="false">Playlist Maker</string>
+
+    <!-- Main -->
+    <string name="main_title">Playlist maker</string>
+    <string name="main_search">Поиск</string>
+    <string name="main_media">Медиатека</string>
+    <string name="main_settings">Настройки</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_dark_theme">Тёмная тема</string>
+    <string name="settings_share_app">Поделиться приложением</string>
+    <string name="settings_support">Написать в поддержку</string>
+    <string name="settings_agreement">Пользовательское соглашение</string>
+
+    <!-- Share -->
+    <string name="share_app_text">Playlist Maker — ссылка на приложение</string>
+    <string name="share_app_chooser_title">Поделиться приложением</string>
+
+
+    <!-- Question screen -->
+    <string name="question_label">Вопрос:</string>
+    <string name="question_progress">2/10</string>
+    <string name="question_text">Рейтинг этого фильма больше чем 9?</string>
+    <string name="answer_no">Нет</string>
+    <string name="answer_yes">Да</string>
+
+    <string name="support_email">your_email@example.com</string>
+    <string name="support_subject">Сообщение разработчикам и разработчицам приложения Playlist Maker</string>
+    <string name="support_body">Спасибо разработчикам и разработчицам за крутое приложение!</string>
+
+    <string name="agreement_url">https://yandex.ru/legal/praktikum_offer/</string>
+
+    <string name="clear_search">Очистить поисковый запрос</string>
+    <string name="search_hint">Поиск</string>
+
 </resources>
