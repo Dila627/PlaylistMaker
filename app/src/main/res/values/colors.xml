@@ -31,5 +31,9 @@
     <color name="search_hint_and_icons">#AEAFB4</color>
     <color name="search_input_text">#1A1B22</color>
 
+    <color name="text_primary_search">#1A1B22</color>
+    <color name="text_secondary">#7A7A7A</color>
+    <color name="divider">#E6E8EB</color>
+
 
 </resources>

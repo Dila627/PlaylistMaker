@@ -31,6 +31,10 @@
     <color name="search_hint_and_icons">#1A1B22</color>
     <color name="search_input_text">#1A1B22</color>
 
+    <color name="text_primary_search">#FFFFFF</color>
+    <color name="text_secondary">#AEAFB4</color>
+    <color name="divider">#2E2F36</color>
+
 
 
 </resources>

@@ -40,7 +40,6 @@
         android:layout_marginTop="@dimen/margin_24"
         android:background="@drawable/bg_search_field">
 
-        <!-- Search icon -->
         <ImageView
             android:id="@+id/ivSearchIcon"
             android:layout_width="16dp"
@@ -50,7 +49,6 @@
             android:src="@drawable/ic_search"
             app:tint="@color/search_hint_and_icons" />
 
-        <!-- Input -->
         <EditText
             android:id="@+id/etSearch"
             android:layout_width="match_parent"
@@ -66,7 +64,6 @@
             android:textColor="@color/search_input_text"
             android:textColorHint="@color/search_hint_and_icons" />
 
-        <!-- Clear button -->
         <ImageView
             android:id="@+id/ivClear"
             android:layout_width="16dp"
@@ -79,5 +76,15 @@
             app:tint="@color/search_hint_and_icons" />
 
     </FrameLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvTracks"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/margin_16"
+        android:overScrollMode="never"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/margin_16" />
+
 
 </LinearLayout>
