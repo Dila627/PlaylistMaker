@@ -8,7 +8,11 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.playlistmaker.model.Track
@@ -18,7 +22,6 @@ class SearchActivity : AppCompatActivity() {
 
     private lateinit var searchEditText: EditText
     private lateinit var clearButton: ImageView
-
     private lateinit var tracksRecyclerView: RecyclerView
     private lateinit var trackAdapter: TrackAdapter
 
@@ -59,8 +62,15 @@ class SearchActivity : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(top = systemBars.top, bottom = systemBars.bottom)
+            insets
+        }
 
         val backButton = findViewById<ImageView>(R.id.btnBack)
         searchEditText = findViewById(R.id.etSearch)
@@ -71,7 +81,6 @@ class SearchActivity : AppCompatActivity() {
 
         tracksRecyclerView.layoutManager = LinearLayoutManager(this)
         tracksRecyclerView.adapter = trackAdapter
-
 
         tracksRecyclerView.visibility = View.GONE
 

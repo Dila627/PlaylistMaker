@@ -62,6 +62,7 @@
             android:paddingStart="36dp"
             android:paddingEnd="36dp"
             android:textColor="@color/search_input_text"
+            android:textCursorDrawable="@drawable/cursor_search"
             android:textColorHint="@color/search_hint_and_icons" />
 
         <ImageView

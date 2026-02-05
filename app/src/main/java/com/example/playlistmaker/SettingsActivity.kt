@@ -6,8 +6,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
@@ -17,8 +21,20 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //  Edge-to-Edge
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+
+        //  Insets
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(
+                top = systemBars.top,
+                bottom = systemBars.bottom
+            )
+            insets
+        }
 
         findViewById<ImageView>(R.id.btnBack).setOnClickListener { finish() }
 
@@ -42,7 +58,12 @@ class SettingsActivity : AppCompatActivity() {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, getString(R.string.share_app_text))
             }
-            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_app_chooser_title)))
+            startActivity(
+                Intent.createChooser(
+                    shareIntent,
+                    getString(R.string.share_app_chooser_title)
+                )
+            )
         }
 
         // ---- Support (Email) ----
@@ -58,7 +79,10 @@ class SettingsActivity : AppCompatActivity() {
 
         // ---- Agreement (Browser) ----
         findViewById<TextView>(R.id.tvAgreement).setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.agreement_url)))
+            val intent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse(getString(R.string.agreement_url))
+            )
             startActivity(intent)
         }
     }
