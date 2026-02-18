@@ -33,5 +33,6 @@
 
     <string name="clear_search">Clearn search list </string>
     <string name="search_hint">Search</string>
+    <string name="track_cover">Track cover</string>
 
 </resources>

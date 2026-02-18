@@ -36,5 +36,6 @@
 
     <string name="clear_search">Очистить поисковый запрос</string>
     <string name="search_hint">Поиск</string>
+    <string name="track_cover">Обложка трека</string>
 
 </resources>
