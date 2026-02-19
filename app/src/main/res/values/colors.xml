@@ -35,5 +35,7 @@
     <color name="text_secondary">#7A7A7A</color>
     <color name="divider">#E6E8EB</color>
 
+    <color name="cursor_color">#3772E7</color>
+
 
 </resources>

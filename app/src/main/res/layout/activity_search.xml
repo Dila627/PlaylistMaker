@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootSearch"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -55,15 +56,15 @@
             android:layout_height="match_parent"
             android:background="@null"
             android:hint="@string/search_hint"
-            android:imeOptions="actionSearch"
+            android:imeOptions="actionDone"
+            android:singleLine="true"
             android:inputType="text"
             android:maxLines="1"
-            android:singleLine="true"
             android:paddingStart="36dp"
             android:paddingEnd="36dp"
             android:textColor="@color/search_input_text"
-            android:textCursorDrawable="@drawable/cursor_search"
-            android:textColorHint="@color/search_hint_and_icons" />
+            android:textColorHint="@color/search_hint_and_icons"
+            android:textCursorDrawable="@drawable/cursor_search" />
 
         <ImageView
             android:id="@+id/ivClear"
@@ -78,14 +79,68 @@
 
     </FrameLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvTracks"
+
+    <FrameLayout
+        android:id="@+id/contentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/margin_16"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvTracks"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/margin_16" />
+
+        <!-- Placeholder (Empty / Error) -->
+    <LinearLayout
+        android:id="@+id/placeholderContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/margin_16"
-        android:overScrollMode="never"
-        android:clipToPadding="false"
-        android:paddingBottom="@dimen/margin_16" />
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:paddingHorizontal="@dimen/screen_padding">
 
+        <ImageView
+            android:id="@+id/placeholderImage"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/placeholderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_24"
+            android:text="@string/nothing_found_title"
+            android:textColor="@color/text_primary_search"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/placeholderText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_8"
+            android:gravity="center"
+            android:text="@string/connection_error_text"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnRetry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_24"
+            android:text="@string/retry"
+            android:visibility="gone" />
+
+</LinearLayout>
+
+    </FrameLayout>
 
 </LinearLayout>

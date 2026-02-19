@@ -35,4 +35,8 @@
     <string name="search_hint">Search</string>
     <string name="track_cover">Track cover</string>
 
+    <string name="nothing_found_title">Nothing found</string>
+    <string name="connection_error_title">Connection problem</string>
+    <string name="connection_error_text">Loading failed. Please check your internet connection</string>
+    <string name="retry">Retry</string>
 </resources>

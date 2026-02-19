@@ -38,4 +38,9 @@
     <string name="search_hint">Поиск</string>
     <string name="track_cover">Обложка трека</string>
 
+    <string name="nothing_found_title">Ничего не нашлось</string>
+    <string name="connection_error_title">Проблемы со связью</string>
+    <string name="connection_error_text">Загрузка не удалась. Проверьте подключение к интернету</string>
+
+    <string name="retry">Обновить</string>
 </resources>

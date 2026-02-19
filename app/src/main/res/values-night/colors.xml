@@ -35,6 +35,6 @@
     <color name="text_secondary">#AEAFB4</color>
     <color name="divider">#2E2F36</color>
 
-
+    <color name="cursor_color">#3772E7</color>
 
 </resources>
