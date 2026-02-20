@@ -137,7 +137,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_24"
             android:text="@string/retry"
-            android:visibility="gone" />
+            android:textColor="@color/retry_button_text"
+            android:background="@drawable/bg_retry_button"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
+            android:textAllCaps="false"
+            android:visibility="gone"/>
 
 </LinearLayout>
 
