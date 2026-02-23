@@ -37,7 +37,7 @@
     <FrameLayout
         android:id="@+id/searchField"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="48dp"
         android:layout_marginTop="@dimen/margin_24"
         android:background="@drawable/bg_search_field">
 
@@ -129,7 +129,8 @@
             android:gravity="center"
             android:text="@string/connection_error_text"
             android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
+            android:textSize="14sp"/>
+
 
         <Button
             android:id="@+id/btnRetry"
