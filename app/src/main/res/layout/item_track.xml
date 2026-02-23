@@ -10,14 +10,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingTop="@dimen/margin_12"
-        android:paddingBottom="@dimen/margin_12">
+        android:paddingTop="@dimen/margin_8"
+        android:paddingBottom="@dimen/margin_8">
 
         <!-- Cover with rounded corners -->
         <androidx.cardview.widget.CardView
             android:layout_width="45dp"
             android:layout_height="45dp"
-            app:cardCornerRadius="8dp"
+            app:cardCornerRadius="2dp"
             app:cardUseCompatPadding="false"
             app:cardPreventCornerOverlap="true">
 
