@@ -8,6 +8,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
 import com.example.playlistmaker.model.Track
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+
 
 class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -21,11 +23,13 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         artistName.text = track.artistName
         trackTime.text = track.trackTime
 
+        val radiusPx = (2 * itemView.resources.displayMetrics.density).toInt()
+
         Glide.with(itemView)
             .load(track.artworkUrl100)
             .placeholder(R.drawable.ic_placeholder)
             .error(R.drawable.ic_placeholder)
-            .centerCrop()
+            .transform(CenterCrop(), RoundedCorners(radiusPx))
             .into(artwork)
     }
 }

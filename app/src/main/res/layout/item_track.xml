@@ -2,85 +2,77 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="61dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingTop="@dimen/margin_8"
+    android:paddingBottom="@dimen/margin_8">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:cardCornerRadius="@dimen/corner_radius_2"
+        app:cardUseCompatPadding="false"
+        app:cardPreventCornerOverlap="false">
+
+        <ImageView
+            android:id="@+id/ivArtwork"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+    </androidx.cardview.widget.CardView>
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="@dimen/margin_8"
-        android:paddingBottom="@dimen/margin_8">
+        android:layout_marginStart="@dimen/margin_12"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <!-- Cover with rounded corners -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            app:cardCornerRadius="2dp"
-            app:cardUseCompatPadding="false"
-            app:cardPreventCornerOverlap="true">
-
-            <ImageView
-                android:id="@+id/ivArtwork"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-        </androidx.cardview.widget.CardView>
-
-        <!-- Text block -->
-        <LinearLayout
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/tvTrackName"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin_12"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/text_primary_search"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tvTrackName"
-                android:layout_width="match_parent"
+                android:id="@+id/tvArtistName"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:textColor="@color/text_primary_search"
-                android:textSize="16sp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
 
-            <LinearLayout
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:text=" • "
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
 
-                <TextView
-                    android:id="@+id/tvArtistName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" • "
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tvTrackTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/tvTrackTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/ivArrow"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_chevron_right"
-            app:tint="@color/text_secondary" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/ivArrow"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_chevron_right"
+        app:tint="@color/text_secondary" />
 
 </LinearLayout>
