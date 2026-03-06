@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.playlistmaker.model.Track
 import com.example.playlistmaker.network.RetrofitClient
 import com.example.playlistmaker.network.SearchResponse
+import com.example.playlistmaker.ui.search.SearchHistory
 import com.example.playlistmaker.ui.search.TrackAdapter
 import retrofit2.Call
 import retrofit2.Callback
@@ -40,7 +41,13 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var tracksRecyclerView: RecyclerView
     private lateinit var trackAdapter: TrackAdapter
 
-    // Placeholder views
+    private lateinit var historyContainer: View
+    private lateinit var historyRecyclerView: RecyclerView
+    private lateinit var historyAdapter: TrackAdapter
+    private lateinit var btnClearHistory: Button
+
+    private lateinit var searchHistory: SearchHistory
+
     private lateinit var placeholderContainer: View
     private lateinit var placeholderImage: ImageView
     private lateinit var placeholderTitle: TextView
@@ -67,22 +74,48 @@ class SearchActivity : AppCompatActivity() {
         clearButton = findViewById(R.id.ivClear)
         tracksRecyclerView = findViewById(R.id.rvTracks)
 
+        historyContainer = findViewById(R.id.historyContainer)
+        historyRecyclerView = findViewById(R.id.rvHistory)
+        btnClearHistory = findViewById(R.id.btnClearHistory)
+
         placeholderContainer = findViewById(R.id.placeholderContainer)
         placeholderImage = findViewById(R.id.placeholderImage)
         placeholderTitle = findViewById(R.id.placeholderTitle)
         placeholderText = findViewById(R.id.placeholderText)
         btnRetry = findViewById(R.id.btnRetry)
 
-        trackAdapter = TrackAdapter(mutableListOf())
+        val prefs = getSharedPreferences("playlist_maker_prefs", MODE_PRIVATE)
+        searchHistory = SearchHistory(prefs)
+
+        historyAdapter = TrackAdapter(mutableListOf()) { track ->
+            searchHistory.addTrack(track)
+            showHistoryIfNeeded()
+        }
+        historyRecyclerView.layoutManager = LinearLayoutManager(this)
+        historyRecyclerView.adapter = historyAdapter
+
+        trackAdapter = TrackAdapter(mutableListOf()) { track ->
+            searchHistory.addTrack(track)
+        }
         tracksRecyclerView.layoutManager = LinearLayoutManager(this)
         tracksRecyclerView.adapter = trackAdapter
-
-        showContent(isVisible = false)
 
         backButton.setOnClickListener { finish() }
 
         btnRetry.setOnClickListener {
             if (lastSearchText.isNotBlank()) performSearch(lastSearchText)
+        }
+
+        btnClearHistory.setOnClickListener {
+            searchHistory.clear()
+            hideHistory()
+        }
+
+        // ВАЖНО: если фокус уже стоит и поле пустое — по клику покажем историю
+        searchEditText.setOnClickListener {
+            if (searchEditText.text.isEmpty()) {
+                showHistoryIfNeeded()
+            }
         }
 
         // Done -> поиск
@@ -106,11 +139,10 @@ class SearchActivity : AppCompatActivity() {
                 searchText = s?.toString().orEmpty()
                 clearButton.visibility = if (searchText.isEmpty()) View.GONE else View.VISIBLE
 
-                // Пока печатает — скрываем контент
                 placeholderContainer.visibility = View.GONE
                 tracksRecyclerView.visibility = View.GONE
+                historyContainer.visibility = View.GONE
 
-                // отменяем предыдущий debounce
                 searchRunnable?.let { handler.removeCallbacks(it) }
 
                 if (searchText.isNotBlank()) {
@@ -121,11 +153,23 @@ class SearchActivity : AppCompatActivity() {
                     searchRunnable = null
                     lastSearchText = ""
                     trackAdapter.updateTracks(emptyList())
+
+                    if (searchEditText.hasFocus()) {
+                        showHistoryIfNeeded()
+                    }
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
+
+        searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus && searchEditText.text.isEmpty()) {
+                showHistoryIfNeeded()
+            } else {
+                hideHistory()
+            }
+        }
 
         clearButton.setOnClickListener {
             searchEditText.text.clear()
@@ -133,8 +177,9 @@ class SearchActivity : AppCompatActivity() {
             searchEditText.clearFocus()
 
             clearButton.visibility = View.GONE
-            showContent(isVisible = false)
             placeholderContainer.visibility = View.GONE
+            tracksRecyclerView.visibility = View.GONE
+            historyContainer.visibility = View.GONE
 
             searchText = ""
             lastSearchText = ""
@@ -143,11 +188,15 @@ class SearchActivity : AppCompatActivity() {
             searchRunnable?.let { handler.removeCallbacks(it) }
             searchRunnable = null
         }
+
+        // Если экран открылся с фокусом и пустым полем — покажем историю сразу
+        if (searchEditText.hasFocus() && searchEditText.text.isEmpty()) {
+            showHistoryIfNeeded()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // важно: убрать отложенные задачи, чтобы не было утечек/вызовов после закрытия экрана
         handler.removeCallbacksAndMessages(null)
     }
 
@@ -158,7 +207,6 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-
         isRestoring = true
         val value = savedInstanceState.getString(KEY_SEARCH_TEXT, "")
         searchEditText.setText(value)
@@ -170,16 +218,17 @@ class SearchActivity : AppCompatActivity() {
 
     private fun performSearch(text: String) {
         lastSearchText = text
+        historyContainer.visibility = View.GONE
+        placeholderContainer.visibility = View.GONE
 
         RetrofitClient.itunesApi.search(text)
             .enqueue(object : Callback<SearchResponse> {
-
                 override fun onResponse(call: Call<SearchResponse>, response: Response<SearchResponse>) {
                     if (response.code() == 200) {
                         val results = response.body()?.results.orEmpty()
-
                         val mappedTracks = results.map { dto ->
                             Track(
+                                trackId = dto.trackId ?: 0L,
                                 trackName = dto.trackName ?: "",
                                 artistName = dto.artistName ?: "",
                                 trackTime = SimpleDateFormat("mm:ss", Locale.getDefault())
@@ -193,7 +242,7 @@ class SearchActivity : AppCompatActivity() {
                             showEmptyPlaceholder()
                         } else {
                             trackAdapter.updateTracks(mappedTracks)
-                            showContent(isVisible = true)
+                            showContent(true)
                         }
                     } else {
                         showErrorPlaceholder()
@@ -209,23 +258,24 @@ class SearchActivity : AppCompatActivity() {
     private fun showContent(isVisible: Boolean) {
         tracksRecyclerView.visibility = if (isVisible) View.VISIBLE else View.GONE
         placeholderContainer.visibility = View.GONE
+        historyContainer.visibility = View.GONE
     }
 
     private fun showEmptyPlaceholder() {
         tracksRecyclerView.visibility = View.GONE
+        historyContainer.visibility = View.GONE
         placeholderContainer.visibility = View.VISIBLE
 
         placeholderImage.setImageResource(R.drawable.ic_nothing_found)
         placeholderTitle.text = getString(R.string.nothing_found_title)
 
-        placeholderText.text = ""
         placeholderText.visibility = View.GONE
-
         btnRetry.visibility = View.GONE
     }
 
     private fun showErrorPlaceholder() {
         tracksRecyclerView.visibility = View.GONE
+        historyContainer.visibility = View.GONE
         placeholderContainer.visibility = View.VISIBLE
 
         placeholderImage.setImageResource(R.drawable.ic_connection_error)
@@ -235,6 +285,23 @@ class SearchActivity : AppCompatActivity() {
         placeholderText.text = getString(R.string.connection_error_text)
 
         btnRetry.visibility = View.VISIBLE
+    }
+
+    private fun showHistoryIfNeeded() {
+        val history = searchHistory.getHistory()
+        if (history.isNotEmpty()) {
+            historyAdapter.updateTracks(history)
+            historyContainer.visibility = View.VISIBLE
+
+            tracksRecyclerView.visibility = View.GONE
+            placeholderContainer.visibility = View.GONE
+        } else {
+            hideHistory()
+        }
+    }
+
+    private fun hideHistory() {
+        historyContainer.visibility = View.GONE
     }
 
     private fun hideKeyboard(view: View) {

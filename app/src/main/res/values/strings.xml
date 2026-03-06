@@ -34,6 +34,7 @@
 
     <string name="agreement_url">https://yandex.ru/legal/praktikum_offer/</string>
 
+    <!-- Search screen -->
     <string name="clear_search">Очистить поисковый запрос</string>
     <string name="search_hint">Поиск</string>
     <string name="track_cover">Обложка трека</string>
@@ -41,6 +42,8 @@
     <string name="nothing_found_title">Ничего не нашлось</string>
     <string name="connection_error_title">Проблемы со связью</string>
     <string name="connection_error_text">Загрузка не удалась. Проверьте подключение к интернету</string>
+    <string name="search_history_title">Вы искали</string>
+    <string name="clear_history">Очистить историю</string>
 
     <string name="retry">Обновить</string>
 </resources>

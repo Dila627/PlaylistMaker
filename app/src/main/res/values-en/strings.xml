@@ -39,4 +39,8 @@
     <string name="connection_error_title">Connection problem</string>
     <string name="connection_error_text">Loading failed. Please check your internet connection</string>
     <string name="retry">Retry</string>
+
+    <string name="search_history_title">You searched for</string>
+    <string name="clear_history">Clear history</string>
+
 </resources>
