@@ -17,6 +17,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -263,8 +264,8 @@ class SearchActivity : AppCompatActivity() {
 
     private fun showEmptyPlaceholder() {
         tracksRecyclerView.visibility = View.GONE
-        historyContainer.visibility = View.GONE
-        placeholderContainer.visibility = View.VISIBLE
+        historyContainer.isVisible = false
+        placeholderContainer.isVisible = true
 
         placeholderImage.setImageResource(R.drawable.ic_nothing_found)
         placeholderTitle.text = getString(R.string.nothing_found_title)
@@ -275,8 +276,8 @@ class SearchActivity : AppCompatActivity() {
 
     private fun showErrorPlaceholder() {
         tracksRecyclerView.visibility = View.GONE
-        historyContainer.visibility = View.GONE
-        placeholderContainer.visibility = View.VISIBLE
+        historyContainer.isVisible = false
+        placeholderContainer.isVisible = true
 
         placeholderImage.setImageResource(R.drawable.ic_connection_error)
         placeholderTitle.text = getString(R.string.connection_error_title)
