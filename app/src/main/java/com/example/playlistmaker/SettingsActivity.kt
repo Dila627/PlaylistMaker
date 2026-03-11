@@ -1,6 +1,5 @@
 package com.example.playlistmaker
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,7 +7,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -16,9 +14,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
 
-    private val prefs by lazy {
-        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //  Edge-to-Edge
@@ -40,16 +36,12 @@ class SettingsActivity : AppCompatActivity() {
 
         // ---- Switch theme ----
         val switchTheme = findViewById<SwitchMaterial>(R.id.switchTheme)
-        val isDarkTheme = prefs.getBoolean(KEY_DARK_THEME, false)
-        switchTheme.isChecked = isDarkTheme
+        val app = applicationContext as App
+
+        switchTheme.isChecked = app.darkTheme
 
         switchTheme.setOnCheckedChangeListener { _, checked ->
-            prefs.edit().putBoolean(KEY_DARK_THEME, checked).apply()
-
-            AppCompatDelegate.setDefaultNightMode(
-                if (checked) AppCompatDelegate.MODE_NIGHT_YES
-                else AppCompatDelegate.MODE_NIGHT_NO
-            )
+            app.switchTheme(checked)
         }
 
         // ---- Share ----
@@ -87,8 +79,5 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    companion object {
-        private const val PREFS_NAME = "playlist_maker_prefs"
-        private const val KEY_DARK_THEME = "dark_theme"
-    }
+
 }

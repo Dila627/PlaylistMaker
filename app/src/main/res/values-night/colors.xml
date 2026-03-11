@@ -38,4 +38,7 @@
     <color name="cursor_color">#3772E7</color>
     <color name="retry_button_text">#1A1B22</color>
 
+    <color name="clear_history_bg">#FFFFFF</color>
+    <color name="clear_history_text">#1A1B22</color>
+
 </resources>
