@@ -40,5 +40,11 @@
 
     <color name="clear_history_bg">#FFFFFF</color>
     <color name="clear_history_text">#1A1B22</color>
+    <color name="player_small_button_bg">#313244</color>
+    <color name="player_small_button_icon">#FFFFFF</color>
+    <color name="player_like_active">#F56B6C</color>
+    <color name="player_big_button_bg">#1A1B22</color>
+    <color name="player_play_button_bg">#FFFFFF</color>
+
 
 </resources>

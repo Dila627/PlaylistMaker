@@ -1,6 +1,7 @@
 package com.example.playlistmaker
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -91,12 +92,14 @@ class SearchActivity : AppCompatActivity() {
         historyAdapter = TrackAdapter(mutableListOf()) { track ->
             searchHistory.addTrack(track)
             showHistoryIfNeeded()
+            openAudioPlayer(track)
         }
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
         historyRecyclerView.adapter = historyAdapter
 
         trackAdapter = TrackAdapter(mutableListOf()) { track ->
             searchHistory.addTrack(track)
+            openAudioPlayer(track)
         }
         tracksRecyclerView.layoutManager = LinearLayoutManager(this)
         tracksRecyclerView.adapter = trackAdapter
@@ -112,7 +115,7 @@ class SearchActivity : AppCompatActivity() {
             hideHistory()
         }
 
-        // ВАЖНО: если фокус уже стоит и поле пустое — по клику покажем историю
+
         searchEditText.setOnClickListener {
             if (searchEditText.text.isEmpty()) {
                 showHistoryIfNeeded()
@@ -190,7 +193,7 @@ class SearchActivity : AppCompatActivity() {
             searchRunnable = null
         }
 
-        // Если экран открылся с фокусом и пустым полем — покажем историю сразу
+
         if (searchEditText.hasFocus() && searchEditText.text.isEmpty()) {
             showHistoryIfNeeded()
         }
@@ -234,7 +237,11 @@ class SearchActivity : AppCompatActivity() {
                                 artistName = dto.artistName ?: "",
                                 trackTime = SimpleDateFormat("mm:ss", Locale.getDefault())
                                     .format(dto.trackTimeMillis ?: 0L),
-                                artworkUrl100 = dto.artworkUrl100 ?: ""
+                                artworkUrl100 = dto.artworkUrl100 ?: "",
+                                collectionName = dto.collectionName,
+                                releaseDate = dto.releaseDate,
+                                primaryGenreName = dto.primaryGenreName,
+                                country = dto.country
                             )
                         }
 
@@ -308,6 +315,11 @@ class SearchActivity : AppCompatActivity() {
     private fun hideKeyboard(view: View) {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+    private fun openAudioPlayer(track: Track) {
+        val intent = Intent(this, AudioPlayerActivity::class.java)
+        intent.putExtra(AudioPlayerActivity.TRACK_KEY, track)
+        startActivity(intent)
     }
 
     companion object {
