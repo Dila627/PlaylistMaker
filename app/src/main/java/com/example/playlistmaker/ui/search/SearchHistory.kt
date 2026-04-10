@@ -9,6 +9,7 @@ class SearchHistory(
     private val prefs: SharedPreferences,
     private val gson: Gson = Gson()
 ) {
+
     companion object {
         private const val KEY_HISTORY = "search_history"
         private const val MAX_SIZE = 10
