@@ -53,4 +53,6 @@
     <string name="country">Страна</string>
 
     <string name="retry">Обновить</string>
+
+    <string name="player_time_default">00:00</string>
 </resources>
