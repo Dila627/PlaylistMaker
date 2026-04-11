@@ -94,10 +94,14 @@
         android:layout_weight="1">
         <ProgressBar
             android:id="@+id/progressBar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="@dimen/progress_bar_size"
+            android:layout_height="@dimen/progress_bar_size"
             android:layout_gravity="center"
+            android:indeterminateTintMode="src_in"
+            android:indeterminateTint="@color/progress_bar_color"
             android:visibility="gone" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/historyContainer"
             android:layout_width="match_parent"
