@@ -38,5 +38,7 @@
     <dimen name="corner_radius_2">2dp</dimen>
     <dimen name="corner_radius_8">8dp</dimen>
 
+    <dimen name="progress_bar_size">48dp</dimen>
+
 
 </resources>
