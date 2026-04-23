@@ -14,7 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
-import com.example.playlistmaker.model.Track
+import com.example.playlistmaker.domain.models.Track
 
 class AudioPlayerActivity : AppCompatActivity() {
 
