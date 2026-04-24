@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.player
 
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -9,28 +9,26 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
+import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.models.Track
 
 class AudioPlayerActivity : AppCompatActivity() {
 
     private var mediaPlayer: MediaPlayer? = null
     private val handler = Handler(Looper.getMainLooper())
-    private var playerState = STATE_DEFAULT
-    private var isPrepared = false
 
     private lateinit var btnPlay: ImageButton
     private lateinit var tvCurrentTime: TextView
 
-    private val updateProgressRunnable = object : Runnable {
+    private var playerState = STATE_DEFAULT
+
+    private val timerRunnable = object : Runnable {
         override fun run() {
-            if (playerState == STATE_PLAYING) {
-                tvCurrentTime.text = formatTime(mediaPlayer?.currentPosition ?: 0)
-                handler.postDelayed(this, UPDATE_PROGRESS_DELAY)
+            mediaPlayer?.let {
+                tvCurrentTime.text = formatTime(it.currentPosition)
+                handler.postDelayed(this, TIMER_DELAY)
             }
         }
     }
@@ -39,12 +37,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audio_player)
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(top = systemBars.top, bottom = systemBars.bottom)
-            insets
-        }
 
         val track = intent.getSerializableExtra(TRACK_KEY) as? Track
 
@@ -57,18 +49,13 @@ class AudioPlayerActivity : AppCompatActivity() {
         val tvArtist = findViewById<TextView>(R.id.tvArtist)
         tvCurrentTime = findViewById(R.id.tvCurrentTime)
 
+        val tvDurationValue = findViewById<TextView>(R.id.tvDurationValue)
         val tvAlbumLabel = findViewById<TextView>(R.id.tvAlbumLabel)
         val tvAlbumValue = findViewById<TextView>(R.id.tvAlbumValue)
-
         val tvYearLabel = findViewById<TextView>(R.id.tvYearLabel)
         val tvYearValue = findViewById<TextView>(R.id.tvYearValue)
-
         val tvGenreValue = findViewById<TextView>(R.id.tvGenreValue)
         val tvCountryValue = findViewById<TextView>(R.id.tvCountryValue)
-        val tvDurationValue = findViewById<TextView>(R.id.tvDurationValue)
-
-        btnPlay.isEnabled = false
-        btnPlay.alpha = 0.5f
 
         btnBack.setOnClickListener {
             finish()
@@ -76,7 +63,7 @@ class AudioPlayerActivity : AppCompatActivity() {
 
         tvTrackName.text = track?.trackName.orEmpty()
         tvArtist.text = track?.artistName.orEmpty()
-        tvCurrentTime.text = getString(R.string.player_time_default)
+        tvCurrentTime.text = "00:00"
 
         tvDurationValue.text = track?.trackTime.orEmpty()
         tvGenreValue.text = track?.primaryGenreName.orEmpty()
@@ -85,15 +72,12 @@ class AudioPlayerActivity : AppCompatActivity() {
         val album = track?.collectionName.orEmpty()
         val year = track?.releaseDate?.take(4).orEmpty()
 
-        val hasAlbum = album.isNotBlank()
-        val hasYear = year.isNotBlank()
-
-        tvAlbumLabel.isVisible = hasAlbum
-        tvAlbumValue.isVisible = hasAlbum
+        tvAlbumLabel.isVisible = album.isNotBlank()
+        tvAlbumValue.isVisible = album.isNotBlank()
         tvAlbumValue.text = album
 
-        tvYearLabel.isVisible = hasYear
-        tvYearValue.isVisible = hasYear
+        tvYearLabel.isVisible = year.isNotBlank()
+        tvYearValue.isVisible = year.isNotBlank()
         tvYearValue.text = year
 
         Glide.with(this)
@@ -111,46 +95,38 @@ class AudioPlayerActivity : AppCompatActivity() {
         var isLiked = false
         btnLike.setOnClickListener {
             isLiked = !isLiked
-
-            if (isLiked) {
-                btnLike.setImageResource(R.drawable.filled_like_icon)
-                btnLike.clearColorFilter()
-            } else {
-                btnLike.setImageResource(R.drawable.ic_playlist_like)
-                btnLike.setColorFilter(getColor(R.color.player_small_button_icon))
-            }
+            btnLike.setImageResource(
+                if (isLiked) R.drawable.filled_like_icon
+                else R.drawable.ic_playlist_like
+            )
         }
     }
 
     private fun preparePlayer(previewUrl: String?) {
-        if (previewUrl.isNullOrEmpty()) return
+        if (previewUrl.isNullOrBlank()) return
 
         mediaPlayer = MediaPlayer().apply {
             setDataSource(previewUrl)
-            prepareAsync()
 
             setOnPreparedListener {
-                isPrepared = true
-                btnPlay.isEnabled = true
-                btnPlay.alpha = 1f
                 playerState = STATE_PREPARED
             }
 
             setOnCompletionListener {
-                btnPlay.setImageResource(R.drawable.ic_playlist_play)
-                tvCurrentTime.text = getString(R.string.player_time_default)
-                handler.removeCallbacks(updateProgressRunnable)
                 playerState = STATE_PREPARED
+                btnPlay.setImageResource(R.drawable.ic_playlist_play)
+                tvCurrentTime.text = "00:00"
+                stopTimer()
             }
+
+            prepareAsync()
         }
     }
 
     private fun playbackControl() {
-        if (!isPrepared) return
-
         when (playerState) {
-            STATE_PREPARED, STATE_PAUSED -> startPlayer()
             STATE_PLAYING -> pausePlayer()
+            STATE_PREPARED -> startPlayer()
         }
     }
 
@@ -158,21 +134,29 @@ class AudioPlayerActivity : AppCompatActivity() {
         mediaPlayer?.start()
         btnPlay.setImageResource(R.drawable.ic_playlist_pause)
         playerState = STATE_PLAYING
-        handler.post(updateProgressRunnable)
+        startTimer()
     }
 
     private fun pausePlayer() {
         mediaPlayer?.pause()
         btnPlay.setImageResource(R.drawable.ic_playlist_play)
-        playerState = STATE_PAUSED
-        handler.removeCallbacks(updateProgressRunnable)
+        playerState = STATE_PREPARED
+        stopTimer()
     }
 
-    private fun formatTime(millis: Int): String {
-        val totalSeconds = millis / 1000
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return String.format("%02d:%02d", minutes, seconds)
+    private fun startTimer() {
+        handler.post(timerRunnable)
+    }
+
+    private fun stopTimer() {
+        handler.removeCallbacks(timerRunnable)
+    }
+
+    private fun formatTime(timeMillis: Int): String {
+        val seconds = timeMillis / 1000
+        val minutes = seconds / 60
+        val remainingSeconds = seconds % 60
+        return String.format("%02d:%02d", minutes, remainingSeconds)
     }
 
     override fun onPause() {
@@ -184,10 +168,9 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacks(updateProgressRunnable)
+        stopTimer()
         mediaPlayer?.release()
         mediaPlayer = null
-        isPrepared = false
     }
 
     companion object {
@@ -196,8 +179,7 @@ class AudioPlayerActivity : AppCompatActivity() {
         private const val STATE_DEFAULT = 0
         private const val STATE_PREPARED = 1
         private const val STATE_PLAYING = 2
-        private const val STATE_PAUSED = 3
 
-        private const val UPDATE_PROGRESS_DELAY = 300L
+        private const val TIMER_DELAY = 300L
     }
 }

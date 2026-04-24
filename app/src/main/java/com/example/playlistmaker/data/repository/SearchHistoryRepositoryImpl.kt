@@ -7,10 +7,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class SearchHistoryRepositoryImpl(
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
+    private val gson: Gson
 ) : SearchHistoryRepository {
-
-    private val gson = Gson()
 
     override fun getHistory(): List<Track> {
         val json = sharedPreferences.getString(SEARCH_HISTORY_KEY, null) ?: return emptyList()

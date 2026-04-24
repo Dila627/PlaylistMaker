@@ -1,6 +1,5 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.search
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -23,10 +22,12 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.playlistmaker.presentation.player.AudioPlayerActivity
+import com.example.playlistmaker.Creator
+import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.models.Track
 import com.example.playlistmaker.domain.search.SearchHistoryInteractor
 import com.example.playlistmaker.domain.search.TracksInteractor
-import com.example.playlistmaker.presentation.search.ui.TrackAdapter
 
 class SearchActivity : AppCompatActivity() {
 
@@ -294,7 +295,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun hideKeyboard(view: View) {
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
@@ -302,7 +303,7 @@ class SearchActivity : AppCompatActivity() {
         if (!clickDebounce()) return
 
         val intent = Intent(this, AudioPlayerActivity::class.java)
-        intent.putExtra(AudioPlayerActivity.TRACK_KEY, track)
+        intent.putExtra(AudioPlayerActivity.Companion.TRACK_KEY, track)
         startActivity(intent)
     }
 

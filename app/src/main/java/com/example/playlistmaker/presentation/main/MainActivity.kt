@@ -1,24 +1,27 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.main
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import com.example.playlistmaker.R
+import com.example.playlistmaker.Creator
+import com.example.playlistmaker.presentation.medialibrary.MediaLibraryActivity
+import com.example.playlistmaker.presentation.search.SearchActivity
+import com.example.playlistmaker.presentation.settings.SettingsActivity
 import com.google.android.material.button.MaterialButton
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //  Edge-to-Edge
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //  Insets
+        // Insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.updatePadding(
@@ -28,12 +31,9 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val prefs = getSharedPreferences("playlist_maker_prefs", MODE_PRIVATE)
-        val isDarkTheme = prefs.getBoolean("dark_theme", false)
-        AppCompatDelegate.setDefaultNightMode(
-            if (isDarkTheme) AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-        )
+
+        val settingsInteractor = Creator.provideSettingsInteractor(this)
+        val isDarkTheme = settingsInteractor.getThemeSettings()
 
         val btnSearch = findViewById<MaterialButton>(R.id.btnSearch)
         val btnMedia = findViewById<MaterialButton>(R.id.btnMedia)
