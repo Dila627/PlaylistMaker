@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.settings
 
 import android.content.Intent
 import android.net.Uri
@@ -10,19 +10,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import com.example.playlistmaker.App
+import com.example.playlistmaker.Creator
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.settings.SettingsInteractor
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
 
-
+    private lateinit var settingsInteractor: SettingsInteractor
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //  Edge-to-Edge
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        //  Insets
+        settingsInteractor = Creator.provideSettingsInteractor(this)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.updatePadding(
@@ -34,17 +38,16 @@ class SettingsActivity : AppCompatActivity() {
 
         findViewById<ImageView>(R.id.btnBack).setOnClickListener { finish() }
 
-        // ---- Switch theme ----
         val switchTheme = findViewById<SwitchMaterial>(R.id.switchTheme)
         val app = applicationContext as App
 
-        switchTheme.isChecked = app.darkTheme
+        switchTheme.isChecked = settingsInteractor.getThemeSettings()
 
         switchTheme.setOnCheckedChangeListener { _, checked ->
+            settingsInteractor.updateThemeSetting(checked)
             app.switchTheme(checked)
         }
 
-        // ---- Share ----
         findViewById<TextView>(R.id.tvShare).setOnClickListener {
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
@@ -58,7 +61,6 @@ class SettingsActivity : AppCompatActivity() {
             )
         }
 
-        // ---- Support (Email) ----
         findViewById<TextView>(R.id.tvSupport).setOnClickListener {
             val intent = Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:")
@@ -69,7 +71,6 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // ---- Agreement (Browser) ----
         findViewById<TextView>(R.id.tvAgreement).setOnClickListener {
             val intent = Intent(
                 Intent.ACTION_VIEW,
@@ -78,6 +79,4 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
-
-
 }

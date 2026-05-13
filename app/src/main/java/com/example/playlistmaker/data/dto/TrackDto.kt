@@ -1,4 +1,4 @@
-package com.example.playlistmaker.network
+package com.example.playlistmaker.data.dto
 
 import com.google.gson.annotations.SerializedName
 
@@ -8,7 +8,6 @@ data class TrackDto(
     @SerializedName("trackTimeMillis") val trackTimeMillis: Long?,
     @SerializedName("artworkUrl100") val artworkUrl100: String?,
     @SerializedName("trackId") val trackId: Long?,
-
     @SerializedName("collectionName") val collectionName: String?,
     @SerializedName("releaseDate") val releaseDate: String?,
     @SerializedName("primaryGenreName") val primaryGenreName: String?,

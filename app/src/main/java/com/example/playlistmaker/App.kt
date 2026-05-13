@@ -2,31 +2,28 @@ package com.example.playlistmaker
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.playlistmaker.domain.settings.SettingsInteractor
 
 class App : Application() {
 
-    private val prefsName = "playlist_maker_prefs"
-    private val keyDarkTheme = "dark_theme"
-
-    var darkTheme = false
-        private set
+    private var darkTheme = false
+    private lateinit var settingsInteractor: SettingsInteractor
 
     override fun onCreate() {
         super.onCreate()
-        val prefs = getSharedPreferences(prefsName, MODE_PRIVATE)
-        darkTheme = prefs.getBoolean(keyDarkTheme, false)
+        settingsInteractor = Creator.provideSettingsInteractor(this)
+        darkTheme = settingsInteractor.getThemeSettings()
         applyTheme(darkTheme)
     }
 
     fun switchTheme(darkThemeEnabled: Boolean) {
         darkTheme = darkThemeEnabled
-
-        getSharedPreferences(prefsName, MODE_PRIVATE)
-            .edit()
-            .putBoolean(keyDarkTheme, darkThemeEnabled)
-            .apply()
-
+        settingsInteractor.updateThemeSetting(darkThemeEnabled)
         applyTheme(darkThemeEnabled)
+    }
+
+    fun isDarkThemeEnabled(): Boolean {
+        return darkTheme
     }
 
     private fun applyTheme(darkThemeEnabled: Boolean) {
