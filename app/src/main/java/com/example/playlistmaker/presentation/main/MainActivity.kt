@@ -8,7 +8,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.example.playlistmaker.R
-import com.example.playlistmaker.Creator
 import com.example.playlistmaker.presentation.medialibrary.MediaLibraryActivity
 import com.example.playlistmaker.presentation.search.SearchActivity
 import com.example.playlistmaker.presentation.settings.SettingsActivity
@@ -21,7 +20,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.updatePadding(
@@ -30,10 +28,6 @@ class MainActivity : AppCompatActivity() {
             )
             insets
         }
-
-
-        val settingsInteractor = Creator.provideSettingsInteractor(this)
-        val isDarkTheme = settingsInteractor.getThemeSettings()
 
         val btnSearch = findViewById<MaterialButton>(R.id.btnSearch)
         val btnMedia = findViewById<MaterialButton>(R.id.btnMedia)

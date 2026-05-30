@@ -17,6 +17,7 @@ import com.example.playlistmaker.domain.search.SearchHistoryInteractor
 import com.example.playlistmaker.domain.search.TracksInteractor
 import com.example.playlistmaker.domain.settings.SettingsInteractor
 import com.google.gson.Gson
+import android.media.MediaPlayer
 
 object Creator {
 
@@ -46,7 +47,9 @@ object Creator {
             gson = provideGson()
         )
     }
-
+    fun provideMediaPlayer(): MediaPlayer {
+        return MediaPlayer()
+    }
     fun provideSearchHistoryInteractor(context: Context): SearchHistoryInteractor {
         return SearchHistoryInteractorImpl(provideSearchHistoryRepository(context))
     }

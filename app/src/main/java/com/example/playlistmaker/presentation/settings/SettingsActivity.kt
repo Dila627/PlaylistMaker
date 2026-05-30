@@ -10,22 +10,27 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.lifecycle.ViewModelProvider
 import com.example.playlistmaker.App
 import com.example.playlistmaker.Creator
 import com.example.playlistmaker.R
-import com.example.playlistmaker.domain.settings.SettingsInteractor
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class SettingsActivity : AppCompatActivity() {
 
-    private lateinit var settingsInteractor: SettingsInteractor
+    private lateinit var viewModel: SettingsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        settingsInteractor = Creator.provideSettingsInteractor(this)
+        viewModel = ViewModelProvider(
+            this,
+            SettingsViewModelFactory(
+                Creator.provideSettingsInteractor(this)
+            )
+        )[SettingsViewModel::class.java]
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -36,15 +41,21 @@ class SettingsActivity : AppCompatActivity() {
             insets
         }
 
-        findViewById<ImageView>(R.id.btnBack).setOnClickListener { finish() }
+        findViewById<ImageView>(R.id.btnBack).setOnClickListener {
+            finish()
+        }
 
         val switchTheme = findViewById<SwitchMaterial>(R.id.switchTheme)
         val app = applicationContext as App
 
-        switchTheme.isChecked = settingsInteractor.getThemeSettings()
+        viewModel.observeTheme().observe(this) { isDark ->
+            switchTheme.isChecked = isDark
+        }
+
+        viewModel.loadTheme()
 
         switchTheme.setOnCheckedChangeListener { _, checked ->
-            settingsInteractor.updateThemeSetting(checked)
+            viewModel.switchTheme(checked)
             app.switchTheme(checked)
         }
 
@@ -53,6 +64,7 @@ class SettingsActivity : AppCompatActivity() {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, getString(R.string.share_app_text))
             }
+
             startActivity(
                 Intent.createChooser(
                     shareIntent,
@@ -68,6 +80,7 @@ class SettingsActivity : AppCompatActivity() {
                 putExtra(Intent.EXTRA_SUBJECT, getString(R.string.support_subject))
                 putExtra(Intent.EXTRA_TEXT, getString(R.string.support_body))
             }
+
             startActivity(intent)
         }
 
@@ -76,6 +89,7 @@ class SettingsActivity : AppCompatActivity() {
                 Intent.ACTION_VIEW,
                 Uri.parse(getString(R.string.agreement_url))
             )
+
             startActivity(intent)
         }
     }

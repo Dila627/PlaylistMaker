@@ -20,14 +20,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.playlistmaker.presentation.player.AudioPlayerActivity
 import com.example.playlistmaker.Creator
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.models.Track
-import com.example.playlistmaker.domain.search.SearchHistoryInteractor
-import com.example.playlistmaker.domain.search.TracksInteractor
+import com.example.playlistmaker.presentation.player.AudioPlayerActivity
 
 class SearchActivity : AppCompatActivity() {
 
@@ -35,7 +34,7 @@ class SearchActivity : AppCompatActivity() {
     private var searchRunnable: Runnable? = null
     private var isClickAllowed = true
 
-    private lateinit var tracksInteractor: TracksInteractor
+    private lateinit var viewModel: SearchViewModel
 
     private lateinit var searchEditText: EditText
     private lateinit var clearButton: ImageView
@@ -46,8 +45,6 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var historyRecyclerView: RecyclerView
     private lateinit var historyAdapter: TrackAdapter
     private lateinit var btnClearHistory: Button
-
-    private lateinit var searchHistoryInteractor: SearchHistoryInteractor
 
     private lateinit var placeholderContainer: View
     private lateinit var placeholderImage: ImageView
@@ -61,13 +58,17 @@ class SearchActivity : AppCompatActivity() {
     private var lastSearchText: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        searchHistoryInteractor = Creator.provideSearchHistoryInteractor(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
-        tracksInteractor = Creator.provideTracksInteractor()
+        viewModel = ViewModelProvider(
+            this,
+            SearchViewModelFactory(
+                tracksInteractor = Creator.provideTracksInteractor(),
+                searchHistoryInteractor = Creator.provideSearchHistoryInteractor(this)
+            )
+        )[SearchViewModel::class.java]
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -78,6 +79,7 @@ class SearchActivity : AppCompatActivity() {
         initViews()
         initAdapters()
         initListeners()
+        observeViewModel()
     }
 
     private fun initViews() {
@@ -99,17 +101,19 @@ class SearchActivity : AppCompatActivity() {
 
     private fun initAdapters() {
         historyAdapter = TrackAdapter(mutableListOf()) { track ->
-            searchHistoryInteractor.addTrack(track)
-            showHistoryIfNeeded()
+            viewModel.addTrackToHistory(track)
+            viewModel.showHistory()
             openAudioPlayer(track)
         }
+
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
         historyRecyclerView.adapter = historyAdapter
 
         trackAdapter = TrackAdapter(mutableListOf()) { track ->
-            searchHistoryInteractor.addTrack(track)
+            viewModel.addTrackToHistory(track)
             openAudioPlayer(track)
         }
+
         tracksRecyclerView.layoutManager = LinearLayoutManager(this)
         tracksRecyclerView.adapter = trackAdapter
     }
@@ -124,7 +128,7 @@ class SearchActivity : AppCompatActivity() {
         }
 
         btnClearHistory.setOnClickListener {
-            searchHistoryInteractor.clearHistory()
+            viewModel.clearHistory()
             hideHistory()
         }
 
@@ -212,50 +216,34 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        searchRunnable?.let { handler.removeCallbacks(it) }
-        super.onDestroy()
-        handler.removeCallbacksAndMessages(null)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(KEY_SEARCH_TEXT, searchText)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        isRestoring = true
-        val value = savedInstanceState.getString(KEY_SEARCH_TEXT, "")
-        searchEditText.setText(value)
-        searchEditText.setSelection(value.length)
-        clearButton.visibility = if (value.isEmpty()) View.GONE else View.VISIBLE
-        searchText = value
-        isRestoring = false
+    private fun observeViewModel() {
+        viewModel.observeState().observe(this) { state ->
+            when (state) {
+                is SearchState.Loading -> showLoading()
+                is SearchState.Content -> {
+                    trackAdapter.updateTracks(state.tracks)
+                    showContent(true)
+                }
+                is SearchState.Empty -> {
+                    trackAdapter.updateTracks(emptyList())
+                    showEmptyPlaceholder()
+                }
+                is SearchState.Error -> showErrorPlaceholder()
+                is SearchState.History -> showHistory(state.tracks)
+            }
+        }
     }
 
     private fun performSearch(text: String) {
         lastSearchText = text
+        viewModel.search(text)
+    }
 
+    private fun showLoading() {
         historyContainer.visibility = View.GONE
         placeholderContainer.visibility = View.GONE
         tracksRecyclerView.visibility = View.GONE
         progressBar.visibility = View.VISIBLE
-
-        tracksInteractor.searchTracks(text) { result ->
-
-            progressBar.visibility = View.GONE
-
-            if (result.isError) {
-                showErrorPlaceholder()
-            } else if (result.tracks.isEmpty()) {
-                trackAdapter.updateTracks(emptyList())
-                showEmptyPlaceholder()
-            } else {
-                trackAdapter.updateTracks(result.tracks)
-                showContent(true)
-            }
-        }
     }
 
     private fun showContent(isVisible: Boolean) {
@@ -278,16 +266,16 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun showHistoryIfNeeded() {
-        val history = searchHistoryInteractor.getHistory()
-        if (history.isNotEmpty()) {
-            historyAdapter.updateTracks(history)
-            historyContainer.visibility = View.VISIBLE
-            tracksRecyclerView.visibility = View.GONE
-            placeholderContainer.visibility = View.GONE
-            progressBar.visibility = View.GONE
-        } else {
-            hideHistory()
-        }
+        hideHistory()
+        viewModel.showHistory()
+    }
+
+    private fun showHistory(history: List<Track>) {
+        historyAdapter.updateTracks(history)
+        historyContainer.visibility = View.VISIBLE
+        tracksRecyclerView.visibility = View.GONE
+        placeholderContainer.visibility = View.GONE
+        progressBar.visibility = View.GONE
     }
 
     private fun hideHistory() {
@@ -303,7 +291,7 @@ class SearchActivity : AppCompatActivity() {
         if (!clickDebounce()) return
 
         val intent = Intent(this, AudioPlayerActivity::class.java)
-        intent.putExtra(AudioPlayerActivity.Companion.TRACK_KEY, track)
+        intent.putExtra(AudioPlayerActivity.TRACK_KEY, track)
         startActivity(intent)
     }
 
@@ -324,9 +312,11 @@ class SearchActivity : AppCompatActivity() {
         }
         return current
     }
+
     private fun showErrorPlaceholder() {
         tracksRecyclerView.visibility = View.GONE
         historyContainer.visibility = View.GONE
+        progressBar.visibility = View.GONE
         placeholderContainer.visibility = View.VISIBLE
 
         placeholderImage.setImageResource(R.drawable.ic_connection_error)
@@ -337,6 +327,29 @@ class SearchActivity : AppCompatActivity() {
 
         btnRetry.visibility = View.VISIBLE
     }
+
+    override fun onDestroy() {
+        searchRunnable?.let { handler.removeCallbacks(it) }
+        handler.removeCallbacksAndMessages(null)
+        super.onDestroy()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(KEY_SEARCH_TEXT, searchText)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        isRestoring = true
+        val value = savedInstanceState.getString(KEY_SEARCH_TEXT, "")
+        searchEditText.setText(value)
+        searchEditText.setSelection(value.length)
+        clearButton.visibility = if (value.isEmpty()) View.GONE else View.VISIBLE
+        searchText = value
+        isRestoring = false
+    }
+
     companion object {
         private const val KEY_SEARCH_TEXT = "KEY_SEARCH_TEXT"
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
