@@ -10,6 +10,7 @@ appcompat = "1.7.1"
 material = "1.13.0"
 activity = "1.12.2"
 constraintlayout = "2.2.1"
+koin = "4.0.0"
 
 
 [libraries]
@@ -22,7 +23,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 androidx-lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 
 [plugins]

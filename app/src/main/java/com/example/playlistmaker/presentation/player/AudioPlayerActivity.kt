@@ -7,15 +7,14 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.models.Track
-import com.example.playlistmaker.Creator
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AudioPlayerActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: AudioPlayerViewModel
+    private val viewModel: AudioPlayerViewModel by viewModel()
 
     private lateinit var btnPlay: ImageButton
     private lateinit var tvCurrentTime: TextView
@@ -24,13 +23,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audio_player)
-
-        viewModel = ViewModelProvider(
-            this,
-            AudioPlayerViewModelFactory(
-                Creator.provideMediaPlayer()
-            )
-        )[AudioPlayerViewModel::class.java]
 
         val track = intent.getSerializableExtra(TRACK_KEY) as? Track
 
