@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.Creator
 
 class AudioPlayerActivity : AppCompatActivity() {
 
@@ -24,7 +25,12 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audio_player)
 
-        viewModel = ViewModelProvider(this)[AudioPlayerViewModel::class.java]
+        viewModel = ViewModelProvider(
+            this,
+            AudioPlayerViewModelFactory(
+                Creator.provideMediaPlayer()
+            )
+        )[AudioPlayerViewModel::class.java]
 
         val track = intent.getSerializableExtra(TRACK_KEY) as? Track
 

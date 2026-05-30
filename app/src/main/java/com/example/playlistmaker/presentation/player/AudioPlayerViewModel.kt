@@ -6,14 +6,14 @@ import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.playlistmaker.R
 
-class AudioPlayerViewModel : ViewModel() {
+class AudioPlayerViewModel(
+    private val mediaPlayer: MediaPlayer
+) : ViewModel() {
 
-    private var mediaPlayer: MediaPlayer? = null
     private val handler = Handler(Looper.getMainLooper())
 
-    private var playerState = STATE_DEFAULT
+    private var playerState = PlayerStateType.DEFAULT
 
     private val stateLiveData = MutableLiveData(PlayerState())
 
@@ -21,50 +21,47 @@ class AudioPlayerViewModel : ViewModel() {
 
     private val timerRunnable = object : Runnable {
         override fun run() {
-            mediaPlayer?.let {
-                stateLiveData.value = PlayerState(
-                    isPlaying = playerState == STATE_PLAYING,
-                    currentTime = formatTime(it.currentPosition)
-                )
-                handler.postDelayed(this, TIMER_DELAY)
-            }
+            stateLiveData.value = PlayerState(
+                isPlaying = playerState == PlayerStateType.PLAYING,
+                currentTime = formatTime(mediaPlayer.currentPosition)
+            )
+            handler.postDelayed(this, TIMER_DELAY)
         }
     }
 
     fun preparePlayer(previewUrl: String?) {
         if (previewUrl.isNullOrBlank()) return
 
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(previewUrl)
+        mediaPlayer.setDataSource(previewUrl)
 
-            setOnPreparedListener {
-                playerState = STATE_PREPARED
-            }
-
-            setOnCompletionListener {
-                playerState = STATE_PREPARED
-                stopTimer()
-                stateLiveData.value = PlayerState(
-                    isPlaying = false,
-                    currentTime = "00:00"
-                )
-            }
-
-            prepareAsync()
+        mediaPlayer.setOnPreparedListener {
+            playerState = PlayerStateType.PREPARED
         }
+
+        mediaPlayer.setOnCompletionListener {
+            playerState = PlayerStateType.PREPARED
+            stopTimer()
+            stateLiveData.value = PlayerState(
+                isPlaying = false,
+                currentTime = "00:00"
+            )
+        }
+
+        mediaPlayer.prepareAsync()
     }
 
     fun playbackControl() {
         when (playerState) {
-            STATE_PLAYING -> pausePlayer()
-            STATE_PREPARED -> startPlayer()
+            PlayerStateType.PLAYING -> pausePlayer()
+            PlayerStateType.PREPARED -> startPlayer()
+            PlayerStateType.DEFAULT -> Unit
         }
     }
 
     fun pausePlayer() {
-        if (playerState == STATE_PLAYING) {
-            mediaPlayer?.pause()
-            playerState = STATE_PREPARED
+        if (playerState == PlayerStateType.PLAYING) {
+            mediaPlayer.pause()
+            playerState = PlayerStateType.PREPARED
             stopTimer()
             stateLiveData.value = PlayerState(
                 isPlaying = false,
@@ -74,8 +71,8 @@ class AudioPlayerViewModel : ViewModel() {
     }
 
     private fun startPlayer() {
-        mediaPlayer?.start()
-        playerState = STATE_PLAYING
+        mediaPlayer.start()
+        playerState = PlayerStateType.PLAYING
         startTimer()
         stateLiveData.value = PlayerState(
             isPlaying = true,
@@ -101,14 +98,10 @@ class AudioPlayerViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         stopTimer()
-        mediaPlayer?.release()
-        mediaPlayer = null
+        mediaPlayer.release()
     }
 
     companion object {
-        private const val STATE_DEFAULT = 0
-        private const val STATE_PREPARED = 1
-        private const val STATE_PLAYING = 2
         private const val TIMER_DELAY = 300L
     }
 }

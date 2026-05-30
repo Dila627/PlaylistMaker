@@ -46,7 +46,9 @@ object Creator {
             gson = provideGson()
         )
     }
-
+    fun provideMediaPlayer(): MediaPlayer {
+        return MediaPlayer()
+    }
     fun provideSearchHistoryInteractor(context: Context): SearchHistoryInteractor {
         return SearchHistoryInteractorImpl(provideSearchHistoryRepository(context))
     }
