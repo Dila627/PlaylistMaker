@@ -26,7 +26,7 @@ val dataModule = module {
 
     single {
         androidContext().getSharedPreferences(
-            "playlist_maker_preferences",
+            "playlist_maker_prefs",
             Context.MODE_PRIVATE
         )
     }

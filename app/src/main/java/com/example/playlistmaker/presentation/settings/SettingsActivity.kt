@@ -38,7 +38,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val switchTheme = findViewById<SwitchMaterial>(R.id.switchTheme)
-        val app = applicationContext as App
+
 
         viewModel.observeTheme().observe(this) { isDark ->
             switchTheme.isChecked = isDark
@@ -48,7 +48,6 @@ class SettingsActivity : AppCompatActivity() {
 
         switchTheme.setOnCheckedChangeListener { _, checked ->
             viewModel.switchTheme(checked)
-            app.switchTheme(checked)
         }
 
         findViewById<TextView>(R.id.tvShare).setOnClickListener {
