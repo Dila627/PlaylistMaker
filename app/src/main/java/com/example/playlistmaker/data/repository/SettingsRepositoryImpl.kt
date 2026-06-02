@@ -1,6 +1,7 @@
 package com.example.playlistmaker.data.repository
 
 import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.playlistmaker.domain.api.SettingsRepository
 
 class SettingsRepositoryImpl(
@@ -15,6 +16,11 @@ class SettingsRepositoryImpl(
         sharedPreferences.edit()
             .putBoolean(THEME_KEY, isDarkThemeEnabled)
             .apply()
+
+        AppCompatDelegate.setDefaultNightMode(
+            if (isDarkThemeEnabled) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
     }
 
     companion object {

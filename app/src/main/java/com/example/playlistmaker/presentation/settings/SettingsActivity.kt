@@ -10,27 +10,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import androidx.lifecycle.ViewModelProvider
 import com.example.playlistmaker.App
-import com.example.playlistmaker.Creator
 import com.example.playlistmaker.R
 import com.google.android.material.switchmaterial.SwitchMaterial
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SettingsActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: SettingsViewModel
+    private val viewModel: SettingsViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
-
-        viewModel = ViewModelProvider(
-            this,
-            SettingsViewModelFactory(
-                Creator.provideSettingsInteractor(this)
-            )
-        )[SettingsViewModel::class.java]
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -46,7 +38,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val switchTheme = findViewById<SwitchMaterial>(R.id.switchTheme)
-        val app = applicationContext as App
+
 
         viewModel.observeTheme().observe(this) { isDark ->
             switchTheme.isChecked = isDark
@@ -56,7 +48,6 @@ class SettingsActivity : AppCompatActivity() {
 
         switchTheme.setOnCheckedChangeListener { _, checked ->
             viewModel.switchTheme(checked)
-            app.switchTheme(checked)
         }
 
         findViewById<TextView>(R.id.tvShare).setOnClickListener {
