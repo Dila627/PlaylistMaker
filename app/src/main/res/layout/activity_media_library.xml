@@ -31,4 +31,20 @@
             android:text="@string/main_media" />
     </LinearLayout>
 
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        app:tabIndicatorColor="@color/text_dark"
+        app:tabTextColor="@color/text_dark"
+        app:tabSelectedTextColor="@color/text_dark"
+        app:tabMode="fixed" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
 </LinearLayout>
