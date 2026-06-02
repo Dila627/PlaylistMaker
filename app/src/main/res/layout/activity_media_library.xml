@@ -32,10 +32,12 @@
     </LinearLayout>
 
     <com.google.android.material.tabs.TabLayout
+        app:tabTextAppearance="@style/MediaLibraryTabText"
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="24dp"
+        android:background="@color/background_light"
         app:tabIndicatorColor="@color/text_dark"
         app:tabTextColor="@color/text_dark"
         app:tabSelectedTextColor="@color/text_dark"

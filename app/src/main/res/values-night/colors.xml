@@ -48,5 +48,7 @@
 
     <color name="progress_bar_color">#3772E7</color>
 
+    <color name="playlist_button_bg">#FFFFFF</color>
+    <color name="playlist_button_text">#000000</color>
 
 </resources>

@@ -87,4 +87,10 @@
     <style name="Icon" parent="Icon_Settings" />
     <style name="Switch" parent="Switch_Settings" />
 
+    <style name="MediaLibraryTabText" parent="TextAppearance.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="textAllCaps">false</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
 </resources>

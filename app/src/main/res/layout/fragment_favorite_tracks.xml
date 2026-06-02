@@ -3,22 +3,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_light"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:paddingHorizontal="24dp">
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
     <ImageView
         android:layout_width="120dp"
         android:layout_height="120dp"
+        android:layout_marginTop="106dp"
         android:src="@drawable/ic_nothing_found"
         android:contentDescription="@string/empty_favorite_tracks" />
 
     <TextView
-        style="@style/Text_TitleScreen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:gravity="center"
-        android:text="@string/empty_favorite_tracks" />
+        android:text="@string/empty_favorite_tracks"
+        android:textColor="@color/text_dark"
+        android:textSize="19sp"
+        android:textStyle="bold" />
 
 </LinearLayout>
