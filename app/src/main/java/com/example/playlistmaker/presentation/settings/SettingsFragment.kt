@@ -1,14 +1,14 @@
-package com.example.playlistmaker.presentation.medialibrary
+package com.example.playlistmaker.presentation.settings
 
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.example.playlistmaker.R
 
-class MediaLibraryFragment : Fragment(R.layout.fragment_media_library) {
+class SettingsFragment : Fragment(R.layout.fragment_settings) {
 
     companion object {
-        fun newInstance() = MediaLibraryFragment()
+        fun newInstance() = SettingsFragment()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
