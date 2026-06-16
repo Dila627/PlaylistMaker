@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootSearch"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_light"
+    android:paddingHorizontal="@dimen/screen_padding"
+    android:paddingTop="@dimen/title_margin_top">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            style="@style/Text_TitleScreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_12"
+            android:text="@string/main_search" />
+    </LinearLayout>
+
+    <!-- Search field-->
+    <FrameLayout
+        android:id="@+id/searchField"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="@dimen/margin_24">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/bg_search_field">
+
+            <ImageView
+                android:id="@+id/ivSearchIcon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_search"
+                app:tint="@color/search_hint_and_icons" />
+
+            <EditText
+                android:id="@+id/etSearch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:hint="@string/search_hint"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingStart="40dp"
+                android:paddingEnd="40dp"
+                android:textColor="@color/search_input_text"
+                android:textColorHint="@color/search_hint_and_icons"
+                android:textCursorDrawable="@drawable/cursor_search" />
+
+            <ImageView
+                android:id="@+id/ivClear"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="16dp"
+                android:contentDescription="@string/clear_search"
+                android:src="@drawable/ic_clear"
+                android:visibility="gone"
+                app:tint="@color/search_hint_and_icons" />
+        </FrameLayout>
+
+    </FrameLayout>
+
+    <!-- Content -->
+    <FrameLayout
+        android:id="@+id/contentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/margin_16"
+        android:layout_weight="1">
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="@dimen/progress_bar_size"
+            android:layout_height="@dimen/progress_bar_size"
+            android:layout_gravity="center"
+            android:indeterminateTintMode="src_in"
+            android:indeterminateTint="@color/progress_bar_color"
+            android:visibility="gone" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/historyContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvHistoryTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_24"
+                android:text="@string/search_history_title"
+                android:textColor="@color/text_primary_search"
+                android:textSize="19sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+
+            <Button
+                android:id="@+id/btnClearHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="36dp"
+                android:layout_marginBottom="@dimen/margin_24"
+                android:background="@drawable/bg_clear_history"
+                android:backgroundTint="@null"
+                app:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="true"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="@string/clear_history"
+                android:textAllCaps="false"
+                android:textColor="@color/clear_history_text"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvHistory"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/margin_24"
+                android:layout_marginBottom="@dimen/margin_16"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                app:layout_constraintTop_toBottomOf="@id/tvHistoryTitle"
+                app:layout_constraintBottom_toTopOf="@id/btnClearHistory"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvTracks"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/margin_16" />
+
+        <!-- Placeholder (Empty / Error) -->
+        <LinearLayout
+            android:id="@+id/placeholderContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/placeholderImage"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:id="@+id/placeholderTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_24"
+                android:text="@string/nothing_found_title"
+                android:textColor="@color/text_primary_search"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/placeholderText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_12"
+                android:gravity="center"
+                android:text="@string/connection_error_text"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btnRetry"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minHeight="36dp"
+                android:minWidth="91dp"
+                android:layout_marginTop="@dimen/margin_24"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:includeFontPadding="false"
+                android:text="@string/retry"
+                android:textAllCaps="false"
+                android:textSize="14sp"
+                android:textColor="@color/retry_button_text"
+                android:background="@drawable/bg_retry_button"
+                android:stateListAnimator="@null"
+                android:backgroundTint="@null"
+                app:backgroundTint="@null"
+                android:elevation="0dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

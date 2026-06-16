@@ -1,11 +1,11 @@
 package com.example.playlistmaker.presentation.medialibrary
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
 class MediaLibraryPagerAdapter(
-    activity: AppCompatActivity
+    activity: FragmentActivity
 ) : FragmentStateAdapter(activity) {
 
     override fun getItemCount(): Int = 2
