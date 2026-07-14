@@ -17,8 +17,8 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
 
     private val viewModel: AudioPlayerViewModel by viewModel()
 
-    private lateinit var btnPlay: ImageButton
-    private lateinit var tvCurrentTime: TextView
+    private var btnPlay: ImageButton? = null
+    private var tvCurrentTime: TextView? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val track = arguments?.getSerializable(TRACK_KEY) as? Track
@@ -46,7 +46,7 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
 
         tvTrackName.text = track?.trackName.orEmpty()
         tvArtist.text = track?.artistName.orEmpty()
-        tvCurrentTime.text = "00:00"
+        tvCurrentTime?.text = "00:00"
 
         tvDurationValue.text = track?.trackTime.orEmpty()
         tvGenreValue.text = track?.primaryGenreName.orEmpty()
@@ -70,9 +70,9 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
             .into(cover)
 
         viewModel.observeState().observe(viewLifecycleOwner) { state ->
-            tvCurrentTime.text = state.currentTime
+            tvCurrentTime?.text = state.currentTime
 
-            btnPlay.setImageResource(
+            btnPlay?.setImageResource(
                 if (state.isPlaying) R.drawable.ic_playlist_pause
                 else R.drawable.ic_playlist_play
             )
@@ -80,7 +80,7 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
 
         viewModel.preparePlayer(track?.previewUrl)
 
-        btnPlay.setOnClickListener {
+        btnPlay?.setOnClickListener {
             viewModel.playbackControl()
         }
 
@@ -98,7 +98,14 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
         super.onPause()
         viewModel.pausePlayer()
     }
+    override fun onDestroyView() {
+        btnPlay?.setOnClickListener(null)
 
+        btnPlay = null
+        tvCurrentTime = null
+
+        super.onDestroyView()
+    }
     companion object {
         const val TRACK_KEY = "track"
 
