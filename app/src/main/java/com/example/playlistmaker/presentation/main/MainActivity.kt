@@ -1,48 +1,30 @@
 package com.example.playlistmaker.presentation.main
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
+import androidx.core.view.isVisible
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import com.example.playlistmaker.R
-import com.example.playlistmaker.presentation.medialibrary.MediaLibraryActivity
-import com.example.playlistmaker.presentation.search.SearchActivity
-import com.example.playlistmaker.presentation.settings.SettingsActivity
-import com.google.android.material.button.MaterialButton
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(
-                top = systemBars.top,
-                bottom = systemBars.bottom
-            )
-            insets
-        }
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.navHostFragment) as NavHostFragment
 
-        val btnSearch = findViewById<MaterialButton>(R.id.btnSearch)
-        val btnMedia = findViewById<MaterialButton>(R.id.btnMedia)
-        val btnSettings = findViewById<MaterialButton>(R.id.btnSettings)
+        val navController = navHostFragment.navController
 
-        btnSearch.setOnClickListener {
-            startActivity(Intent(this, SearchActivity::class.java))
-        }
+        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        bottomNavigation.setupWithNavController(navController)
 
-        btnMedia.setOnClickListener {
-            startActivity(Intent(this, MediaLibraryActivity::class.java))
-        }
-
-        btnSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            bottomNavigation.isVisible = destination.id != R.id.audioPlayerFragment
         }
     }
 }

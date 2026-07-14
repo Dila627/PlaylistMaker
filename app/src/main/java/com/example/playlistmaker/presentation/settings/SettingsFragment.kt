@@ -3,44 +3,27 @@ package com.example.playlistmaker.presentation.settings
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageView
+import android.view.View
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
-import com.example.playlistmaker.App
+import androidx.fragment.app.Fragment
 import com.example.playlistmaker.R
 import com.google.android.material.switchmaterial.SwitchMaterial
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsFragment : Fragment(R.layout.fragment_settings) {
 
     private val viewModel: SettingsViewModel by viewModel()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
+    companion object {
+        fun newInstance() = SettingsFragment()
+    }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(
-                top = systemBars.top,
-                bottom = systemBars.bottom
-            )
-            insets
-        }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        findViewById<ImageView>(R.id.btnBack).setOnClickListener {
-            finish()
-        }
+        val switchTheme = view.findViewById<SwitchMaterial>(R.id.switchTheme)
 
-        val switchTheme = findViewById<SwitchMaterial>(R.id.switchTheme)
-
-
-        viewModel.observeTheme().observe(this) { isDark ->
+        viewModel.observeTheme().observe(viewLifecycleOwner) { isDark ->
             switchTheme.isChecked = isDark
         }
 
@@ -50,7 +33,7 @@ class SettingsActivity : AppCompatActivity() {
             viewModel.switchTheme(checked)
         }
 
-        findViewById<TextView>(R.id.tvShare).setOnClickListener {
+        view.findViewById<TextView>(R.id.tvShare).setOnClickListener {
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, getString(R.string.share_app_text))
@@ -64,7 +47,7 @@ class SettingsActivity : AppCompatActivity() {
             )
         }
 
-        findViewById<TextView>(R.id.tvSupport).setOnClickListener {
+        view.findViewById<TextView>(R.id.tvSupport).setOnClickListener {
             val intent = Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:")
                 putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.support_email)))
@@ -75,12 +58,11 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        findViewById<TextView>(R.id.tvAgreement).setOnClickListener {
+        view.findViewById<TextView>(R.id.tvAgreement).setOnClickListener {
             val intent = Intent(
                 Intent.ACTION_VIEW,
                 Uri.parse(getString(R.string.agreement_url))
             )
-
             startActivity(intent)
         }
     }
