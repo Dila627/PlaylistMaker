@@ -21,6 +21,8 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
     private var tvCurrentTime: TextView? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         val track = arguments?.getSerializable(TRACK_KEY) as? Track
 
         val btnBack = view.findViewById<ImageView>(R.id.btnBack)
