@@ -12,6 +12,7 @@ activity = "1.12.2"
 constraintlayout = "2.2.1"
 koin = "4.0.0"
 navigation = "2.8.5"
+coroutines = "1.11.0"
 
 
 [libraries]
@@ -28,6 +29,8 @@ koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = 
 androidx-lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
