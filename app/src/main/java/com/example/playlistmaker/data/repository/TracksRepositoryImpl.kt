@@ -5,22 +5,13 @@ import com.example.playlistmaker.data.network.ITunesApi
 import com.example.playlistmaker.domain.api.TracksRepository
 import com.example.playlistmaker.domain.models.Track
 import com.example.playlistmaker.domain.models.TrackSearchResult
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class TracksRepositoryImpl(
     private val iTunesApi: ITunesApi
 ) : TracksRepository {
-
-    private val timeFormatter = SimpleDateFormat(
-        "mm:ss",
-        Locale.getDefault()
-    )
 
     override fun searchTracks(
         expression: String
@@ -45,7 +36,7 @@ class TracksRepositoryImpl(
                     isError = true
                 )
             )
-        }.flowOn(Dispatchers.IO)
+        }
     }
 
     private fun mapToDomain(dto: TrackDto): Track {
@@ -53,9 +44,7 @@ class TracksRepositoryImpl(
             trackId = dto.trackId ?: 0L,
             trackName = dto.trackName.orEmpty(),
             artistName = dto.artistName.orEmpty(),
-            trackTime = timeFormatter.format(
-                dto.trackTimeMillis ?: 0L
-            ),
+            trackTimeMillis = dto.trackTimeMillis ?: 0L,
             artworkUrl100 = dto.artworkUrl100.orEmpty(),
             collectionName = dto.collectionName,
             releaseDate = dto.releaseDate,
