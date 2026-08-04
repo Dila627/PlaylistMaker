@@ -3,10 +3,12 @@ package com.example.playlistmaker.presentation.search
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.playlistmaker.domain.models.Track
 import com.example.playlistmaker.domain.search.SearchHistoryInteractor
 import com.example.playlistmaker.domain.search.TracksInteractor
-
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class SearchViewModel(
     private val tracksInteractor: TracksInteractor,
@@ -14,26 +16,31 @@ class SearchViewModel(
 ) : ViewModel() {
 
     private val stateLiveData = MutableLiveData<SearchState>()
-
     fun observeState(): LiveData<SearchState> = stateLiveData
+
+    private var searchJob: Job? = null
 
     fun search(text: String) {
         if (text.isBlank()) return
 
-        stateLiveData.postValue(SearchState.Loading)
+        searchJob?.cancel()
 
-        tracksInteractor.searchTracks(text) { result ->
-            when {
-                result.isError -> {
-                    stateLiveData.postValue(SearchState.Error)
-                }
+        stateLiveData.value = SearchState.Loading
 
-                result.tracks.isEmpty() -> {
-                    stateLiveData.postValue(SearchState.Empty)
-                }
+        searchJob = viewModelScope.launch {
+            tracksInteractor.searchTracks(text).collect { result ->
+                stateLiveData.value = when {
+                    result.isError -> {
+                        SearchState.Error
+                    }
 
-                else -> {
-                    stateLiveData.postValue(SearchState.Content(result.tracks))
+                    result.tracks.isEmpty() -> {
+                        SearchState.Empty
+                    }
+
+                    else -> {
+                        SearchState.Content(result.tracks)
+                    }
                 }
             }
         }
@@ -53,5 +60,10 @@ class SearchViewModel(
 
     fun clearHistory() {
         searchHistoryInteractor.clearHistory()
+    }
+
+    override fun onCleared() {
+        searchJob?.cancel()
+        super.onCleared()
     }
 }

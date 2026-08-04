@@ -11,6 +11,8 @@ import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.models.Track
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class AudioPlayerActivity : AppCompatActivity() {
 
@@ -51,7 +53,9 @@ class AudioPlayerActivity : AppCompatActivity() {
         tvArtist.text = track?.artistName.orEmpty()
         tvCurrentTime.text = "00:00"
 
-        tvDurationValue.text = track?.trackTime.orEmpty()
+        tvDurationValue.text = track?.trackTimeMillis?.let {
+            SimpleDateFormat("mm:ss", Locale.getDefault()).format(it)
+        }.orEmpty()
         tvGenreValue.text = track?.primaryGenreName.orEmpty()
         tvCountryValue.text = track?.country.orEmpty()
 

@@ -1,33 +1,25 @@
 package com.example.playlistmaker.presentation.player
 
 import android.media.MediaPlayer
-import android.os.Handler
-import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class AudioPlayerViewModel(
     private val mediaPlayer: MediaPlayer
 ) : ViewModel() {
 
-    private val handler = Handler(Looper.getMainLooper())
-
     private var playerState = PlayerStateType.DEFAULT
 
     private val stateLiveData = MutableLiveData(PlayerState())
-
     fun observeState(): LiveData<PlayerState> = stateLiveData
 
-    private val timerRunnable = object : Runnable {
-        override fun run() {
-            stateLiveData.value = PlayerState(
-                isPlaying = playerState == PlayerStateType.PLAYING,
-                currentTime = formatTime(mediaPlayer.currentPosition)
-            )
-            handler.postDelayed(this, TIMER_DELAY)
-        }
-    }
+    private var timerJob: Job? = null
 
     fun preparePlayer(previewUrl: String?) {
         if (previewUrl.isNullOrBlank()) return
@@ -36,14 +28,20 @@ class AudioPlayerViewModel(
 
         mediaPlayer.setOnPreparedListener {
             playerState = PlayerStateType.PREPARED
+
+            stateLiveData.value = PlayerState(
+                isPlaying = false,
+                currentTime = DEFAULT_TIME
+            )
         }
 
         mediaPlayer.setOnCompletionListener {
             playerState = PlayerStateType.PREPARED
             stopTimer()
+
             stateLiveData.value = PlayerState(
                 isPlaying = false,
-                currentTime = "00:00"
+                currentTime = DEFAULT_TIME
             )
         }
 
@@ -59,49 +57,70 @@ class AudioPlayerViewModel(
     }
 
     fun pausePlayer() {
-        if (playerState == PlayerStateType.PLAYING) {
-            mediaPlayer.pause()
-            playerState = PlayerStateType.PREPARED
-            stopTimer()
-            stateLiveData.value = PlayerState(
-                isPlaying = false,
-                currentTime = stateLiveData.value?.currentTime ?: "00:00"
-            )
-        }
+        if (playerState != PlayerStateType.PLAYING) return
+
+        mediaPlayer.pause()
+        playerState = PlayerStateType.PREPARED
+        stopTimer()
+
+        stateLiveData.value = PlayerState(
+            isPlaying = false,
+            currentTime = formatTime(mediaPlayer.currentPosition)
+        )
     }
 
     private fun startPlayer() {
         mediaPlayer.start()
         playerState = PlayerStateType.PLAYING
-        startTimer()
+
         stateLiveData.value = PlayerState(
             isPlaying = true,
-            currentTime = stateLiveData.value?.currentTime ?: "00:00"
+            currentTime = formatTime(mediaPlayer.currentPosition)
         )
+
+        startTimer()
     }
 
     private fun startTimer() {
-        handler.post(timerRunnable)
+        stopTimer()
+
+        timerJob = viewModelScope.launch {
+            while (isActive && playerState == PlayerStateType.PLAYING) {
+                stateLiveData.value = PlayerState(
+                    isPlaying = true,
+                    currentTime = formatTime(mediaPlayer.currentPosition)
+                )
+
+                delay(TIMER_DELAY)
+            }
+        }
     }
 
     private fun stopTimer() {
-        handler.removeCallbacks(timerRunnable)
+        timerJob?.cancel()
+        timerJob = null
     }
 
     private fun formatTime(timeMillis: Int): String {
         val seconds = timeMillis / 1000
         val minutes = seconds / 60
         val remainingSeconds = seconds % 60
-        return String.format("%02d:%02d", minutes, remainingSeconds)
+
+        return String.format(
+            "%02d:%02d",
+            minutes,
+            remainingSeconds
+        )
     }
 
     override fun onCleared() {
-        super.onCleared()
         stopTimer()
         mediaPlayer.release()
+        super.onCleared()
     }
 
     companion object {
         private const val TIMER_DELAY = 300L
+        private const val DEFAULT_TIME = "00:00"
     }
 }
