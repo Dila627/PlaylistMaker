@@ -12,22 +12,32 @@ class MediaLibraryFragment : Fragment(R.layout.fragment_media_library) {
 
     private var tabLayoutMediator: TabLayoutMediator? = null
     private var viewPager: ViewPager2? = null
+    private var pagerAdapter: MediaLibraryPagerAdapter? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         viewPager = view.findViewById(R.id.viewPager)
         val tabLayout = view.findViewById<TabLayout>(R.id.tabLayout)
 
-        viewPager?.adapter = MediaLibraryPagerAdapter(requireActivity())
+        pagerAdapter = MediaLibraryPagerAdapter(this)
+        viewPager?.adapter = pagerAdapter
 
         tabLayoutMediator = TabLayoutMediator(
             tabLayout,
             requireNotNull(viewPager)
         ) { tab, position ->
             tab.text = when (position) {
-                0 -> getString(R.string.favorite_tracks)
-                else -> getString(R.string.playlists)
+                FAVORITE_TRACKS_POSITION ->
+                    getString(R.string.favorite_tracks)
+
+                PLAYLISTS_POSITION ->
+                    getString(R.string.playlists)
+
+                else -> ""
             }
         }
 
@@ -39,12 +49,16 @@ class MediaLibraryFragment : Fragment(R.layout.fragment_media_library) {
         tabLayoutMediator = null
 
         viewPager?.adapter = null
+        pagerAdapter = null
         viewPager = null
 
         super.onDestroyView()
     }
 
     companion object {
+        private const val FAVORITE_TRACKS_POSITION = 0
+        private const val PLAYLISTS_POSITION = 1
+
         fun newInstance() = MediaLibraryFragment()
     }
 }

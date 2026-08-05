@@ -20,6 +20,7 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
     private val viewModel: AudioPlayerViewModel by viewModel()
 
     private var btnPlay: ImageButton? = null
+    private var btnLike: ImageButton? = null
     private var tvCurrentTime: TextView? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -29,9 +30,9 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
 
         val btnBack = view.findViewById<ImageView>(R.id.btnBack)
         btnPlay = view.findViewById(R.id.btnPlay)
-        val btnLike = view.findViewById<ImageButton>(R.id.btnLike)
-        val cover = view.findViewById<ImageView>(R.id.cover)
+        btnLike = view.findViewById(R.id.btnLike)
 
+        val cover = view.findViewById<ImageView>(R.id.cover)
         val tvTrackName = view.findViewById<TextView>(R.id.tvTrackName)
         val tvArtist = view.findViewById<TextView>(R.id.tvArtist)
         tvCurrentTime = view.findViewById(R.id.tvCurrentTime)
@@ -50,11 +51,15 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
 
         tvTrackName.text = track?.trackName.orEmpty()
         tvArtist.text = track?.artistName.orEmpty()
-        tvCurrentTime?.text = "00:00"
+        tvCurrentTime?.text = DEFAULT_TIME
 
-        tvDurationValue.text = track?.trackTimeMillis?.let {
-            SimpleDateFormat("mm:ss", Locale.getDefault()).format(it)
+        tvDurationValue.text = track?.trackTimeMillis?.let { duration ->
+            SimpleDateFormat(
+                TRACK_TIME_FORMAT,
+                Locale.getDefault()
+            ).format(duration)
         }.orEmpty()
+
         tvGenreValue.text = track?.primaryGenreName.orEmpty()
         tvCountryValue.text = track?.country.orEmpty()
 
@@ -69,7 +74,7 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
         tvYearValue.isVisible = year.isNotBlank()
         tvYearValue.text = year
 
-        Glide.with(this)
+        Glide.with(view)
             .load(track?.getCoverArtwork())
             .placeholder(R.drawable.ic_placeholder)
             .error(R.drawable.ic_placeholder)
@@ -79,24 +84,32 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
             tvCurrentTime?.text = state.currentTime
 
             btnPlay?.setImageResource(
-                if (state.isPlaying) R.drawable.ic_playlist_pause
-                else R.drawable.ic_playlist_play
+                if (state.isPlaying) {
+                    R.drawable.ic_playlist_pause
+                } else {
+                    R.drawable.ic_playlist_play
+                }
+            )
+
+            btnLike?.setImageResource(
+                if (state.isFavorite) {
+                    R.drawable.filled_like_icon
+                } else {
+                    R.drawable.ic_playlist_like
+                }
             )
         }
 
-        viewModel.preparePlayer(track?.previewUrl)
+        track?.let { selectedTrack ->
+            viewModel.initialize(selectedTrack)
+        }
 
         btnPlay?.setOnClickListener {
             viewModel.playbackControl()
         }
 
-        var isLiked = false
-        btnLike.setOnClickListener {
-            isLiked = !isLiked
-            btnLike.setImageResource(
-                if (isLiked) R.drawable.filled_like_icon
-                else R.drawable.ic_playlist_like
-            )
+        btnLike?.setOnClickListener {
+            viewModel.onFavoriteClicked()
         }
     }
 
@@ -104,16 +117,23 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
         super.onPause()
         viewModel.pausePlayer()
     }
+
     override fun onDestroyView() {
         btnPlay?.setOnClickListener(null)
+        btnLike?.setOnClickListener(null)
 
         btnPlay = null
+        btnLike = null
         tvCurrentTime = null
 
         super.onDestroyView()
     }
+
     companion object {
         const val TRACK_KEY = "track"
+
+        private const val DEFAULT_TIME = "00:00"
+        private const val TRACK_TIME_FORMAT = "mm:ss"
 
         fun newInstance() = AudioPlayerFragment()
     }

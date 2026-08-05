@@ -5,23 +5,66 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.domain.search.FavoriteTracksInteractor
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class AudioPlayerViewModel(
-    private val mediaPlayer: MediaPlayer
+    private val mediaPlayer: MediaPlayer,
+    private val favoriteTracksInteractor: FavoriteTracksInteractor
 ) : ViewModel() {
 
     private var playerState = PlayerStateType.DEFAULT
-
-    private val stateLiveData = MutableLiveData(PlayerState())
-    fun observeState(): LiveData<PlayerState> = stateLiveData
-
     private var timerJob: Job? = null
 
-    fun preparePlayer(previewUrl: String?) {
+    private var currentTrack: Track? = null
+    private var preparedTrackId: Long? = null
+
+    private val stateLiveData = MutableLiveData(PlayerState())
+
+    fun observeState(): LiveData<PlayerState> = stateLiveData
+
+    fun initialize(track: Track) {
+        currentTrack = track
+        checkFavorite(track.trackId)
+
+        if (preparedTrackId != track.trackId) {
+            preparedTrackId = track.trackId
+            preparePlayer(track.previewUrl)
+        }
+    }
+
+    private fun checkFavorite(trackId: Long) {
+        viewModelScope.launch {
+            val isFavorite = favoriteTracksInteractor.isFavorite(trackId)
+
+            stateLiveData.value = currentState().copy(
+                isFavorite = isFavorite
+            )
+        }
+    }
+
+    fun onFavoriteClicked() {
+        val track = currentTrack ?: return
+        val isCurrentlyFavorite = currentState().isFavorite
+
+        viewModelScope.launch {
+            if (isCurrentlyFavorite) {
+                favoriteTracksInteractor.removeTrack(track)
+            } else {
+                favoriteTracksInteractor.addTrack(track)
+            }
+
+            stateLiveData.value = currentState().copy(
+                isFavorite = !isCurrentlyFavorite
+            )
+        }
+    }
+
+    private fun preparePlayer(previewUrl: String?) {
         if (previewUrl.isNullOrBlank()) return
 
         mediaPlayer.setDataSource(previewUrl)
@@ -29,7 +72,7 @@ class AudioPlayerViewModel(
         mediaPlayer.setOnPreparedListener {
             playerState = PlayerStateType.PREPARED
 
-            stateLiveData.value = PlayerState(
+            stateLiveData.value = currentState().copy(
                 isPlaying = false,
                 currentTime = DEFAULT_TIME
             )
@@ -39,7 +82,7 @@ class AudioPlayerViewModel(
             playerState = PlayerStateType.PREPARED
             stopTimer()
 
-            stateLiveData.value = PlayerState(
+            stateLiveData.value = currentState().copy(
                 isPlaying = false,
                 currentTime = DEFAULT_TIME
             )
@@ -63,7 +106,7 @@ class AudioPlayerViewModel(
         playerState = PlayerStateType.PREPARED
         stopTimer()
 
-        stateLiveData.value = PlayerState(
+        stateLiveData.value = currentState().copy(
             isPlaying = false,
             currentTime = formatTime(mediaPlayer.currentPosition)
         )
@@ -73,7 +116,7 @@ class AudioPlayerViewModel(
         mediaPlayer.start()
         playerState = PlayerStateType.PLAYING
 
-        stateLiveData.value = PlayerState(
+        stateLiveData.value = currentState().copy(
             isPlaying = true,
             currentTime = formatTime(mediaPlayer.currentPosition)
         )
@@ -86,7 +129,7 @@ class AudioPlayerViewModel(
 
         timerJob = viewModelScope.launch {
             while (isActive && playerState == PlayerStateType.PLAYING) {
-                stateLiveData.value = PlayerState(
+                stateLiveData.value = currentState().copy(
                     isPlaying = true,
                     currentTime = formatTime(mediaPlayer.currentPosition)
                 )
@@ -101,16 +144,16 @@ class AudioPlayerViewModel(
         timerJob = null
     }
 
-    private fun formatTime(timeMillis: Int): String {
-        val seconds = timeMillis / 1000
-        val minutes = seconds / 60
-        val remainingSeconds = seconds % 60
+    private fun currentState(): PlayerState {
+        return stateLiveData.value ?: PlayerState()
+    }
 
-        return String.format(
-            "%02d:%02d",
-            minutes,
-            remainingSeconds
-        )
+    private fun formatTime(timeMillis: Int): String {
+        val totalSeconds = timeMillis / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+
+        return String.format("%02d:%02d", minutes, seconds)
     }
 
     override fun onCleared() {

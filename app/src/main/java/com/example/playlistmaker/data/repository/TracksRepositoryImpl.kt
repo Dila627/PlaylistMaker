@@ -1,5 +1,6 @@
 package com.example.playlistmaker.data.repository
 
+import com.example.playlistmaker.data.db.FavoriteTrackDao
 import com.example.playlistmaker.data.dto.TrackDto
 import com.example.playlistmaker.data.network.ITunesApi
 import com.example.playlistmaker.domain.api.TracksRepository
@@ -10,7 +11,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 
 class TracksRepositoryImpl(
-    private val iTunesApi: ITunesApi
+    private val iTunesApi: ITunesApi,
+    private val favoriteTrackDao: FavoriteTrackDao
 ) : TracksRepository {
 
     override fun searchTracks(
@@ -18,9 +20,13 @@ class TracksRepositoryImpl(
     ): Flow<TrackSearchResult> {
         return flow {
             val response = iTunesApi.search(expression)
+            val favoriteTrackIds = favoriteTrackDao.getFavoriteTrackIds()
 
             val tracks = response.results.orEmpty().map { dto ->
-                mapToDomain(dto)
+                mapToDomain(
+                    dto = dto,
+                    favoriteTrackIds = favoriteTrackIds
+                )
             }
 
             emit(
@@ -39,9 +45,14 @@ class TracksRepositoryImpl(
         }
     }
 
-    private fun mapToDomain(dto: TrackDto): Track {
+    private fun mapToDomain(
+        dto: TrackDto,
+        favoriteTrackIds: List<Long>
+    ): Track {
+        val trackId = dto.trackId ?: 0L
+
         return Track(
-            trackId = dto.trackId ?: 0L,
+            trackId = trackId,
             trackName = dto.trackName.orEmpty(),
             artistName = dto.artistName.orEmpty(),
             trackTimeMillis = dto.trackTimeMillis ?: 0L,
@@ -50,7 +61,8 @@ class TracksRepositoryImpl(
             releaseDate = dto.releaseDate,
             primaryGenreName = dto.primaryGenreName,
             country = dto.country,
-            previewUrl = dto.previewUrl
+            previewUrl = dto.previewUrl,
+            isFavorite = trackId in favoriteTrackIds
         )
     }
 }
