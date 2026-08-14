@@ -7,30 +7,51 @@ import com.example.playlistmaker.domain.api.PlaylistsRepository
 import com.example.playlistmaker.domain.models.Playlist
 import com.example.playlistmaker.domain.models.Track
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 class PlaylistsRepositoryImpl(
     private val playlistDao: PlaylistDao
 ) : PlaylistsRepository {
 
+    // =========================================================
+    // CREATE PLAYLIST
+    // =========================================================
+
     override suspend fun createPlaylist(
         playlist: Playlist
     ): Long {
+
         return playlistDao.insertPlaylist(
-            mapPlaylistToEntity(playlist)
+            mapPlaylistToEntity(
+                playlist
+            )
         )
     }
 
+    // =========================================================
+    // GET PLAYLISTS
+    // =========================================================
+
     override fun getPlaylists(): Flow<List<Playlist>> {
+
         return playlistDao
             .getPlaylists()
             .map { entities ->
 
                 entities.map { entity ->
-                    mapPlaylistToDomain(entity)
+
+                    mapPlaylistToDomain(
+                        entity
+                    )
                 }
             }
+            .distinctUntilChanged()
     }
+
+    // =========================================================
+    // ADD TRACK TO PLAYLIST
+    // =========================================================
 
     override suspend fun addTrackToPlaylist(
         track: Track,
@@ -62,7 +83,8 @@ class PlaylistsRepositoryImpl(
         val playlistEntity =
             playlistDao.getPlaylistById(
                 playlist.id
-            ) ?: return true
+            )
+                ?: return true
 
         val currentTrackIds =
             parseTrackIds(
@@ -70,8 +92,9 @@ class PlaylistsRepositoryImpl(
             )
 
         val updatedTrackIds =
-            listOf(track.trackId) +
-                    currentTrackIds
+            listOf(
+                track.trackId
+            ) + currentTrackIds
 
         val updatedTracksCount =
             playlistDao.getTracksCount(
@@ -81,7 +104,9 @@ class PlaylistsRepositoryImpl(
         playlistDao.updatePlaylist(
             playlistEntity.copy(
                 trackIds =
-                    updatedTrackIds.joinToString(","),
+                    updatedTrackIds.joinToString(
+                        ","
+                    ),
                 tracksCount =
                     updatedTracksCount
             )
@@ -90,114 +115,29 @@ class PlaylistsRepositoryImpl(
         return true
     }
 
+    // =========================================================
+    // GET PLAYLIST TRACKS
+    // =========================================================
+
     override suspend fun getPlaylistTracks(
         playlistId: Long
     ): List<Track> {
 
         return playlistDao
-            .getPlaylistTracks(playlistId)
+            .getPlaylistTracks(
+                playlistId
+            )
             .map { entity ->
-                mapTrackToDomain(entity)
+
+                mapTrackToDomain(
+                    entity
+                )
             }
     }
 
-    private fun mapPlaylistToEntity(
-        playlist: Playlist
-    ): PlaylistEntity {
-
-        return PlaylistEntity(
-            id = playlist.id,
-            name = playlist.name,
-            description = playlist.description,
-            imagePath = playlist.imagePath,
-            trackIds =
-                playlist.trackIds.joinToString(","),
-            tracksCount = playlist.tracksCount
-        )
-    }
-
-    private fun mapPlaylistToDomain(
-        entity: PlaylistEntity
-    ): Playlist {
-
-        return Playlist(
-            id = entity.id,
-            name = entity.name,
-            description = entity.description,
-            imagePath = entity.imagePath,
-            trackIds =
-                parseTrackIds(entity.trackIds),
-            tracksCount = entity.tracksCount
-        )
-    }
-
-    private fun mapTrackToEntity(
-        track: Track,
-        playlistId: Long
-    ): PlaylistTrackEntity {
-
-        return PlaylistTrackEntity(
-            playlistId = playlistId,
-            trackId = track.trackId,
-            trackName = track.trackName,
-            artistName = track.artistName,
-            trackTimeMillis =
-                track.trackTimeMillis,
-            artworkUrl100 =
-                track.artworkUrl100,
-            collectionName =
-                track.collectionName,
-            releaseDate =
-                track.releaseDate,
-            primaryGenreName =
-                track.primaryGenreName,
-            country =
-                track.country,
-            previewUrl =
-                track.previewUrl
-        )
-    }
-
-    private fun mapTrackToDomain(
-        entity: PlaylistTrackEntity
-    ): Track {
-
-        return Track(
-            trackId = entity.trackId,
-            trackName = entity.trackName,
-            artistName = entity.artistName,
-            trackTimeMillis =
-                entity.trackTimeMillis,
-            artworkUrl100 =
-                entity.artworkUrl100,
-            collectionName =
-                entity.collectionName,
-            releaseDate =
-                entity.releaseDate,
-            primaryGenreName =
-                entity.primaryGenreName,
-            country =
-                entity.country,
-            previewUrl =
-                entity.previewUrl
-        )
-    }
-
-    private fun parseTrackIds(
-        value: String
-    ): List<Long> {
-
-        if (value.isBlank()) {
-            return emptyList()
-        }
-
-        return value
-            .split(",")
-            .mapNotNull { trackId ->
-                trackId.toLongOrNull()
-            }
-    }
-
+    // =========================================================
+    // DELETE TRACK FROM PLAYLIST
+    // =========================================================
 
     override suspend fun deleteTrackFromPlaylist(
         playlistId: Long,
@@ -212,7 +152,8 @@ class PlaylistsRepositoryImpl(
         val playlistEntity =
             playlistDao.getPlaylistById(
                 playlistId
-            ) ?: return
+            )
+                ?: return
 
         val currentTrackIds =
             parseTrackIds(
@@ -220,8 +161,9 @@ class PlaylistsRepositoryImpl(
             )
 
         val updatedTrackIds =
-            currentTrackIds.filter {
-                it != trackId
+            currentTrackIds.filter { id ->
+
+                id != trackId
             }
 
         val updatedTracksCount =
@@ -232,19 +174,34 @@ class PlaylistsRepositoryImpl(
         playlistDao.updatePlaylist(
             playlistEntity.copy(
                 trackIds =
-                    updatedTrackIds.joinToString(","),
+                    updatedTrackIds.joinToString(
+                        ","
+                    ),
                 tracksCount =
                     updatedTracksCount
             )
         )
     }
+
+    // =========================================================
+    // UPDATE PLAYLIST
+    // =========================================================
+
     override suspend fun updatePlaylist(
         playlist: Playlist
     ) {
+
         playlistDao.updatePlaylist(
-            mapPlaylistToEntity(playlist)
+            mapPlaylistToEntity(
+                playlist
+            )
         )
     }
+
+    // =========================================================
+    // DELETE PLAYLIST
+    // =========================================================
+
     override suspend fun deletePlaylist(
         playlistId: Long
     ) {
@@ -256,5 +213,174 @@ class PlaylistsRepositoryImpl(
         playlistDao.deletePlaylist(
             playlistId
         )
+    }
+
+    // =========================================================
+    // PLAYLIST -> ENTITY
+    // =========================================================
+
+    private fun mapPlaylistToEntity(
+        playlist: Playlist
+    ): PlaylistEntity {
+
+        return PlaylistEntity(
+            id =
+                playlist.id,
+
+            name =
+                playlist.name,
+
+            description =
+                playlist.description,
+
+            imagePath =
+                playlist.imagePath,
+
+            trackIds =
+                playlist.trackIds
+                    .joinToString(
+                        ","
+                    ),
+
+            tracksCount =
+                playlist.tracksCount
+        )
+    }
+
+    // =========================================================
+    // ENTITY -> PLAYLIST
+    // =========================================================
+
+    private fun mapPlaylistToDomain(
+        entity: PlaylistEntity
+    ): Playlist {
+
+        return Playlist(
+            id =
+                entity.id,
+
+            name =
+                entity.name,
+
+            description =
+                entity.description,
+
+            imagePath =
+                entity.imagePath,
+
+            trackIds =
+                parseTrackIds(
+                    entity.trackIds
+                ),
+
+            tracksCount =
+                entity.tracksCount
+        )
+    }
+
+    // =========================================================
+    // TRACK -> ENTITY
+    // =========================================================
+
+    private fun mapTrackToEntity(
+        track: Track,
+        playlistId: Long
+    ): PlaylistTrackEntity {
+
+        return PlaylistTrackEntity(
+            playlistId =
+                playlistId,
+
+            trackId =
+                track.trackId,
+
+            trackName =
+                track.trackName,
+
+            artistName =
+                track.artistName,
+
+            trackTimeMillis =
+                track.trackTimeMillis,
+
+            artworkUrl100 =
+                track.artworkUrl100,
+
+            collectionName =
+                track.collectionName,
+
+            releaseDate =
+                track.releaseDate,
+
+            primaryGenreName =
+                track.primaryGenreName,
+
+            country =
+                track.country,
+
+            previewUrl =
+                track.previewUrl
+        )
+    }
+
+    // =========================================================
+    // ENTITY -> TRACK
+    // =========================================================
+
+    private fun mapTrackToDomain(
+        entity: PlaylistTrackEntity
+    ): Track {
+
+        return Track(
+            trackId =
+                entity.trackId,
+
+            trackName =
+                entity.trackName,
+
+            artistName =
+                entity.artistName,
+
+            trackTimeMillis =
+                entity.trackTimeMillis,
+
+            artworkUrl100 =
+                entity.artworkUrl100,
+
+            collectionName =
+                entity.collectionName,
+
+            releaseDate =
+                entity.releaseDate,
+
+            primaryGenreName =
+                entity.primaryGenreName,
+
+            country =
+                entity.country,
+
+            previewUrl =
+                entity.previewUrl
+        )
+    }
+
+    // =========================================================
+    // STRING TRACK IDS -> LIST<Long>
+    // =========================================================
+
+    private fun parseTrackIds(
+        value: String
+    ): List<Long> {
+
+        if (value.isBlank()) {
+            return emptyList()
+        }
+
+        return value
+            .split(",")
+            .mapNotNull { trackId ->
+
+                trackId.toLongOrNull()
+            }
     }
 }

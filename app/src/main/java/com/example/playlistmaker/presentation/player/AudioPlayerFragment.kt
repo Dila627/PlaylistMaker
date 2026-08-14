@@ -6,9 +6,10 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,21 +17,35 @@ import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.models.Playlist
 import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.presentation.playlist.CreatePlaylistFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
-import androidx.core.os.bundleOf
-import com.example.playlistmaker.presentation.playlist.CreatePlaylistFragment
 
-class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
+class AudioPlayerFragment :
+    Fragment(R.layout.fragment_audio_player) {
 
-    private val viewModel: AudioPlayerViewModel by viewModel()
+    private val viewModel:
+            AudioPlayerViewModel by viewModel()
 
-    private var btnPlay: ImageButton? = null
-    private var btnPlaylist: ImageButton? = null
-    private var btnLike: ImageButton? = null
-    private var tvCurrentTime: TextView? = null
+    private var btnPlay:
+            ImageButton? = null
+
+    private var btnPlaylist:
+            ImageButton? = null
+
+    private var btnLike:
+            ImageButton? = null
+
+    private var tvCurrentTime:
+            TextView? = null
+
+    // =========================================================
+    // ON VIEW CREATED
+    // =========================================================
 
     override fun onViewCreated(
         view: View,
@@ -42,7 +57,14 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
         )
 
         val track =
-            arguments?.getSerializable(TRACK_KEY) as? Track
+            arguments
+                ?.getSerializable(
+                    TRACK_KEY
+                ) as? Track
+
+        // =====================================================
+        // VIEWS
+        // =====================================================
 
         val btnBack =
             view.findViewById<ImageView>(
@@ -119,9 +141,9 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
                 R.id.tvCountryValue
             )
 
-        // ============================================
-        // НАЗАД
-        // ============================================
+        // =====================================================
+        // BACK
+        // =====================================================
 
         btnBack.setOnClickListener {
 
@@ -129,15 +151,17 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
                 .popBackStack()
         }
 
-        // ============================================
-        // ИНФОРМАЦИЯ О ТРЕКЕ
-        // ============================================
+        // =====================================================
+        // TRACK INFO
+        // =====================================================
 
         tvTrackName.text =
-            track?.trackName.orEmpty()
+            track?.trackName
+                .orEmpty()
 
         tvArtist.text =
-            track?.artistName.orEmpty()
+            track?.artistName
+                .orEmpty()
 
         tvCurrentTime?.text =
             DEFAULT_TIME
@@ -157,10 +181,12 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
                 .orEmpty()
 
         tvGenreValue.text =
-            track?.primaryGenreName.orEmpty()
+            track?.primaryGenreName
+                .orEmpty()
 
         tvCountryValue.text =
-            track?.country.orEmpty()
+            track?.country
+                .orEmpty()
 
         val album =
             track
@@ -175,7 +201,9 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
                 )
                 .orEmpty()
 
-        // Альбом
+        // =====================================================
+        // ALBUM
+        // =====================================================
 
         tvAlbumLabel.isVisible =
             album.isNotBlank()
@@ -186,7 +214,9 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
         tvAlbumValue.text =
             album
 
-        // Год
+        // =====================================================
+        // YEAR
+        // =====================================================
 
         tvYearLabel.isVisible =
             year.isNotBlank()
@@ -197,13 +227,14 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
         tvYearValue.text =
             year
 
-        // ============================================
-        // ОБЛОЖКА
-        // ============================================
+        // =====================================================
+        // COVER
+        // =====================================================
 
         Glide.with(this)
             .load(
-                track?.getCoverArtwork()
+                track
+                    ?.getCoverArtwork()
             )
             .placeholder(
                 R.drawable.ic_placeholder
@@ -215,76 +246,74 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
                 cover
             )
 
-        // ============================================
-        // СОСТОЯНИЕ ПЛЕЕРА
-        // ============================================
+        // =====================================================
+        // PLAYER STATE
+        // =====================================================
 
         observePlayerState()
 
-        /*
-         * ВАЖНО:
-         *
-         * observePlaylistAddResult()
-         * здесь больше НЕ вызываем.
-         *
-         * Результат добавления обрабатывается
-         * только внутри открытого BottomSheet.
-         */
-
-        // ============================================
+        // =====================================================
         // PREPARE PLAYER
-        // ============================================
+        // =====================================================
 
         viewModel.preparePlayer(
             track?.previewUrl
         )
 
-        // ============================================
+        // =====================================================
         // PLAY / PAUSE
-        // ============================================
+        // =====================================================
 
-        btnPlay?.setOnClickListener {
+        btnPlay
+            ?.setOnClickListener {
 
-            viewModel.playbackControl()
-        }
-
-        // ============================================
-        // ДОБАВИТЬ В ПЛЕЙЛИСТ
-        // ============================================
-
-        btnPlaylist?.setOnClickListener {
-
-            track?.let { selectedTrack ->
-
-                showPlaylistsBottomSheet(
-                    selectedTrack
-                )
+                viewModel
+                    .playbackControl()
             }
-        }
 
-        // ============================================
+        // =====================================================
+        // ADD TO PLAYLIST
+        // =====================================================
+
+        btnPlaylist
+            ?.setOnClickListener {
+
+                track
+                    ?.let { selectedTrack ->
+
+                        showPlaylistsBottomSheet(
+                            selectedTrack
+                        )
+                    }
+            }
+
+        // =====================================================
         // LIKE
-        // ============================================
+        // =====================================================
 
         var isLiked =
             false
 
-        btnLike?.setOnClickListener {
+        btnLike
+            ?.setOnClickListener {
 
-            isLiked =
-                !isLiked
+                isLiked =
+                    !isLiked
 
-            btnLike?.setImageResource(
-                if (isLiked) {
+                btnLike
+                    ?.setImageResource(
+                        if (isLiked) {
 
-                    R.drawable.filled_like_icon
+                            R.drawable
+                                .filled_like_icon
 
-                } else {
+                        } else {
 
-                    R.drawable.ic_playlist_like
-                }
-            )
-        }
+                            R.drawable
+                                .ic_playlist_like
+                        }
+                    )
+            }
     }
 
     // =========================================================
@@ -302,21 +331,26 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
                 tvCurrentTime?.text =
                     state.currentTime
 
-                btnPlay?.setImageResource(
-                    if (state.isPlaying) {
+                btnPlay
+                    ?.setImageResource(
+                        if (
+                            state.isPlaying
+                        ) {
 
-                        R.drawable.ic_playlist_pause
+                            R.drawable
+                                .ic_playlist_pause
 
-                    } else {
+                        } else {
 
-                        R.drawable.ic_playlist_play
-                    }
-                )
+                            R.drawable
+                                .ic_playlist_play
+                        }
+                    )
             }
     }
 
     // =========================================================
-    // BOTTOM SHEET: ADD TO PLAYLIST
+    // ADD TO PLAYLIST BOTTOM SHEET
     // =========================================================
 
     private fun showPlaylistsBottomSheet(
@@ -350,17 +384,18 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
                     R.id.btnNewPlaylist
                 )
 
-        // ============================================
-        // АДАПТЕР
-        // ============================================
+        // =====================================================
+        // ADAPTER
+        // =====================================================
 
         val adapter =
             PlaylistBottomSheetAdapter { playlist ->
 
-                viewModel.addTrackToPlaylist(
-                    track = track,
-                    playlist = playlist
-                )
+                viewModel
+                    .addTrackToPlaylist(
+                        track = track,
+                        playlist = playlist
+                    )
             }
 
         recyclerView.layoutManager =
@@ -371,17 +406,19 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
         recyclerView.adapter =
             adapter
 
-        // ============================================
-        // СПИСОК ПЛЕЙЛИСТОВ
-        // ============================================
+        // =====================================================
+        // PLAYLIST LIST
+        // =====================================================
 
         val playlistsObserver =
-            Observer<List<Playlist>> { playlists ->
+            androidx.lifecycle
+                .Observer<List<Playlist>> { playlists ->
 
-                adapter.updatePlaylists(
-                    playlists
-                )
-            }
+                    adapter
+                        .updatePlaylists(
+                            playlists
+                        )
+                }
 
         viewModel
             .observePlaylists()
@@ -390,98 +427,110 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
                 playlistsObserver
             )
 
-        // ============================================
-        // РЕЗУЛЬТАТ ДОБАВЛЕНИЯ
-        // ============================================
+        // =====================================================
+        // ONE-SHOT ADD RESULT
+        // =====================================================
 
-        val addResultObserver =
-            Observer<PlaylistAddResult?> { result ->
+        /*
+         * Collector существует ТОЛЬКО,
+         * пока открыт этот Bottom Sheet.
+         *
+         * Если пользователь закрыл окно,
+         * Job отменяется.
+         *
+         * SharedFlow имеет replay = 0,
+         * поэтому результат операции,
+         * закончившейся после закрытия окна,
+         * не попадёт в следующее открытие.
+         */
+        val addResultJob:
+                Job =
+            viewLifecycleOwner
+                .lifecycleScope
+                .launch {
 
-                result
-                    ?: return@Observer
+                    viewModel
+                        .observePlaylistAddResult()
+                        .collect { result ->
 
-                val message =
-                    if (result.isAdded) {
+                            val message =
+                                if (
+                                    result.isAdded
+                                ) {
 
-                        "Добавлено в плейлист ${result.playlistName}"
+                                    "Добавлено в плейлист ${result.playlistName}"
 
-                    } else {
+                                } else {
 
-                        "Трек уже добавлен в плейлист ${result.playlistName}"
-                    }
+                                    "Трек уже добавлен в плейлист ${result.playlistName}"
+                                }
 
-                Toast.makeText(
-                    requireContext(),
-                    message,
-                    Toast.LENGTH_SHORT
-                ).show()
+                            Toast.makeText(
+                                requireContext(),
+                                message,
+                                Toast.LENGTH_SHORT
+                            ).show()
 
-                /*
-                 * ВАЖНО:
-                 *
-                 * После выбора любого плейлиста
-                 * BottomSheet закрываем.
-                 *
-                 * И если трек добавился,
-                 * и если он уже был добавлен.
-                 */
+                            /*
+                             * После результата
+                             * закрываем Bottom Sheet.
+                             */
+                            if (
+                                dialog.isShowing
+                            ) {
+
+                                dialog.dismiss()
+                            }
+                        }
+                }
+
+        // =====================================================
+        // NEW PLAYLIST
+        // =====================================================
+
+        btnNewPlaylist
+            .setOnClickListener {
+
                 dialog.dismiss()
 
-                /*
-                 * Только после обработки
-                 * очищаем событие.
-                 */
-                viewModel
-                    .playlistAddResultHandled()
+                findNavController()
+                    .navigate(
+                        R.id.createPlaylistFragment,
+                        bundleOf(
+                            CreatePlaylistFragment
+                                .TRACK_KEY
+                                    to track
+                        )
+                    )
             }
 
-        viewModel
-            .observePlaylistAddResult()
-            .observe(
-                viewLifecycleOwner,
-                addResultObserver
-            )
+        // =====================================================
+        // ON DISMISS
+        // =====================================================
 
-        // ============================================
-        // УДАЛЕНИЕ OBSERVERS ПРИ ЗАКРЫТИИ
-        // ============================================
+        dialog
+            .setOnDismissListener {
 
-        dialog.setOnDismissListener {
-
-            viewModel
-                .observePlaylists()
-                .removeObserver(
-                    playlistsObserver
-                )
-
-            viewModel
-                .observePlaylistAddResult()
-                .removeObserver(
-                    addResultObserver
-                )
-        }
-
-        // ============================================
-        // НОВЫЙ ПЛЕЙЛИСТ
-        // ============================================
-
-        btnNewPlaylist.setOnClickListener {
-
-            dialog.dismiss()
-
-            findNavController()
-                .navigate(
-                    R.id.createPlaylistFragment,
-                    bundleOf(
-                        CreatePlaylistFragment.TRACK_KEY
-                                to track
+                /*
+                 * Observer списка больше
+                 * не нужен после закрытия.
+                 */
+                viewModel
+                    .observePlaylists()
+                    .removeObserver(
+                        playlistsObserver
                     )
-                )
-        }
 
-        // ============================================
+                /*
+                 * Самое важное:
+                 * отменяем collector результата.
+                 */
+                addResultJob.cancel()
+            }
+
+        // =====================================================
         // SHOW
-        // ============================================
+        // =====================================================
 
         dialog.show()
     }
@@ -498,7 +547,7 @@ class AudioPlayerFragment : Fragment(R.layout.fragment_audio_player) {
     }
 
     // =========================================================
-    // CLEANUP
+    // DESTROY VIEW
     // =========================================================
 
     override fun onDestroyView() {

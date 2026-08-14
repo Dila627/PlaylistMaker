@@ -3,12 +3,20 @@ package com.example.playlistmaker.presentation.main
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.playlistmaker.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var navController: NavController
+    private lateinit var bottomNavigation: BottomNavigationView
+
+    // =========================================================
+    // ON CREATE
+    // =========================================================
 
     override fun onCreate(
         savedInstanceState: Bundle?
@@ -19,30 +27,51 @@ class MainActivity : AppCompatActivity() {
             R.layout.activity_main
         )
 
+        initNavigation()
+        setupBottomNavigation()
+        setupBottomNavigationReselection()
+        setupBottomNavigationVisibility()
+    }
+
+    // =========================================================
+    // INIT NAVIGATION
+    // =========================================================
+
+    private fun initNavigation() {
+
         val navHostFragment =
             supportFragmentManager
                 .findFragmentById(
                     R.id.navHostFragment
                 ) as NavHostFragment
 
-        val navController =
+        navController =
             navHostFragment.navController
 
-        val bottomNavigation =
-            findViewById<BottomNavigationView>(
+        bottomNavigation =
+            findViewById(
                 R.id.bottomNavigation
             )
+    }
 
-        // Обычная навигация:
-        // Search / Media Library / Settings
+    // =========================================================
+    // BOTTOM NAVIGATION
+    // =========================================================
+
+    private fun setupBottomNavigation() {
+
         bottomNavigation
             .setupWithNavController(
                 navController
             )
+    }
 
-        // Если пользователь повторно нажимает
-        // на уже выбранную вкладку Media Library,
-        // возвращаемся на корневой экран медиатеки.
+    // =========================================================
+    // RESELECTED ITEM
+    // =========================================================
+
+    private fun setupBottomNavigationReselection() {
+
         bottomNavigation
             .setOnItemReselectedListener { item ->
 
@@ -50,48 +79,74 @@ class MainActivity : AppCompatActivity() {
 
                     R.id.mediaLibraryFragment -> {
 
-                        val wasPopped =
-                            navController
-                                .popBackStack(
-                                    R.id.mediaLibraryFragment,
-                                    false
-                                )
-
-                        if (
-                            !wasPopped &&
-                            navController
-                                .currentDestination
-                                ?.id !=
-                            R.id.mediaLibraryFragment
-                        ) {
-
-                            navController.navigate(
-                                R.id.mediaLibraryFragment
-                            )
-                        }
+                        returnToMediaLibrary()
                     }
 
                     R.id.searchFragment -> {
 
-                        navController
-                            .popBackStack(
-                                R.id.searchFragment,
-                                false
-                            )
+                        popToDestination(
+                            R.id.searchFragment
+                        )
                     }
 
                     R.id.settingsFragment -> {
 
-                        navController
-                            .popBackStack(
-                                R.id.settingsFragment,
-                                false
-                            )
+                        popToDestination(
+                            R.id.settingsFragment
+                        )
                     }
                 }
             }
+    }
 
-        // Показываем / скрываем BottomNavigation
+    // =========================================================
+    // RETURN TO MEDIA LIBRARY ROOT
+    // =========================================================
+
+    private fun returnToMediaLibrary() {
+
+        val wasPopped =
+            navController
+                .popBackStack(
+                    R.id.mediaLibraryFragment,
+                    false
+                )
+
+        if (
+            !wasPopped &&
+            navController
+                .currentDestination
+                ?.id !=
+            R.id.mediaLibraryFragment
+        ) {
+
+            navController.navigate(
+                R.id.mediaLibraryFragment
+            )
+        }
+    }
+
+    // =========================================================
+    // POP TO ROOT DESTINATION
+    // =========================================================
+
+    private fun popToDestination(
+        destinationId: Int
+    ) {
+
+        navController
+            .popBackStack(
+                destinationId,
+                false
+            )
+    }
+
+    // =========================================================
+    // SHOW / HIDE BOTTOM NAVIGATION
+    // =========================================================
+
+    private fun setupBottomNavigationVisibility() {
+
         navController
             .addOnDestinationChangedListener {
                     _,
@@ -99,18 +154,31 @@ class MainActivity : AppCompatActivity() {
                     _ ->
 
                 bottomNavigation.isVisible =
-                    when (destination.id) {
-
-                        R.id.audioPlayerFragment,
-                        R.id.playlistFragment,
-                        R.id.createPlaylistFragment -> {
-                            false
-                        }
-
-                        else -> {
-                            true
-                        }
-                    }
+                    shouldShowBottomNavigation(
+                        destination.id
+                    )
             }
+    }
+
+    // =========================================================
+    // DESTINATION VISIBILITY
+    // =========================================================
+
+    private fun shouldShowBottomNavigation(
+        destinationId: Int
+    ): Boolean {
+
+        return when (destinationId) {
+
+            R.id.audioPlayerFragment,
+            R.id.playlistFragment,
+            R.id.createPlaylistFragment -> {
+                false
+            }
+
+            else -> {
+                true
+            }
+        }
     }
 }

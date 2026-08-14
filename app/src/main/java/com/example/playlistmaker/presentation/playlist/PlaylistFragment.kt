@@ -1,19 +1,19 @@
 package com.example.playlistmaker.presentation.playlist
 
+import android.app.Dialog
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
-import android.net.Uri
 import android.os.Bundle
-import android.view.ContextThemeWrapper
+import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -28,26 +28,31 @@ import com.example.playlistmaker.presentation.player.AudioPlayerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
-import android.app.Dialog
-import android.graphics.drawable.ColorDrawable
-import android.view.Gravity
-import android.view.WindowManager
 
-class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
+class PlaylistFragment :
+    Fragment(R.layout.fragment_playlist) {
 
-    private val viewModel: PlaylistViewModel by viewModel()
+    private val viewModel:
+            PlaylistViewModel by viewModel()
 
-    private var tracksAdapter: PlaylistTrackAdapter? = null
+    private var tracksAdapter:
+            PlaylistTrackAdapter? = null
 
-    private var currentPlaylist: Playlist? = null
+    private var currentPlaylist:
+            Playlist? = null
 
-    private var currentTracks: List<Track> =
-        emptyList()
+    private var currentTracks:
+            List<Track> = emptyList()
 
-    private var tvTracksCount: TextView? =
-        null
+    private var tvTracksCount:
+            TextView? = null
+
+    // =========================================================
+    // ON VIEW CREATED
+    // =========================================================
 
     override fun onViewCreated(
         view: View,
@@ -60,8 +65,14 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
 
         val playlistId =
             arguments
-                ?.getLong(PLAYLIST_ID_KEY)
+                ?.getLong(
+                    PLAYLIST_ID_KEY
+                )
                 ?: INVALID_PLAYLIST_ID
+
+        // =====================================================
+        // VIEWS
+        // =====================================================
 
         val btnBack =
             view.findViewById<ImageView>(
@@ -132,7 +143,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             BottomSheetBehavior.STATE_COLLAPSED
 
         // =====================================================
-        // СПИСОК ТРЕКОВ
+        // TRACK ADAPTER
         // =====================================================
 
         tracksAdapter =
@@ -162,7 +173,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             tracksAdapter
 
         // =====================================================
-        // НАЗАД
+        // BACK
         // =====================================================
 
         btnBack.setOnClickListener {
@@ -171,7 +182,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
         }
 
         // =====================================================
-        // ДАННЫЕ ПЛЕЙЛИСТА
+        // PLAYLIST
         // =====================================================
 
         viewModel
@@ -201,40 +212,18 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
 
                 updatePlaylistInfo()
 
-                val imagePath =
-                    playlist.imagePath
+                // =============================================
+                // COVER
+                // =============================================
 
-                if (
-                    !imagePath.isNullOrBlank()
-                ) {
-
-                    Glide.with(this)
-                        .load(
-                            Uri.parse(
-                                imagePath
-                            )
-                        )
-                        .placeholder(
-                            R.drawable.ic_placeholder
-                        )
-                        .error(
-                            R.drawable.ic_placeholder
-                        )
-                        .into(
-                            ivPlaylistCover
-                        )
-
-                } else {
-
-                    ivPlaylistCover
-                        .setImageResource(
-                            R.drawable.ic_placeholder
-                        )
-                }
+                showPlaylistCover(
+                    imageView = ivPlaylistCover,
+                    imagePath = playlist.imagePath
+                )
             }
 
         // =====================================================
-        // ТРЕКИ
+        // TRACKS
         // =====================================================
 
         viewModel
@@ -255,7 +244,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             }
 
         // =====================================================
-        // УДАЛЕНИЕ ПЛЕЙЛИСТА ЗАВЕРШЕНО
+        // PLAYLIST DELETED
         // =====================================================
 
         viewModel
@@ -275,7 +264,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             }
 
         // =====================================================
-        // ЗАГРУЗКА
+        // LOAD
         // =====================================================
 
         viewModel.loadPlaylist(
@@ -298,7 +287,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
         }
 
         // =====================================================
-        // ⋮
+        // MORE
         // =====================================================
 
         btnMore.setOnClickListener {
@@ -314,7 +303,42 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
     }
 
     // =========================================================
-    // ОТКРЫТЬ ТРЕК
+    // SHOW PLAYLIST COVER
+    // =========================================================
+
+    private fun showPlaylistCover(
+        imageView: ImageView,
+        imagePath: String?
+    ) {
+
+        if (
+            imagePath.isNullOrBlank()
+        ) {
+
+            imageView.setImageResource(
+                R.drawable.ic_placeholder
+            )
+
+            return
+        }
+
+        Glide.with(this)
+            .load(
+                File(imagePath)
+            )
+            .placeholder(
+                R.drawable.ic_placeholder
+            )
+            .error(
+                R.drawable.ic_placeholder
+            )
+            .into(
+                imageView
+            )
+    }
+
+    // =========================================================
+    // OPEN TRACK
     // =========================================================
 
     private fun openTrack(
@@ -325,15 +349,14 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             .navigate(
                 R.id.audioPlayerFragment,
                 bundleOf(
-                    AudioPlayerFragment
-                        .TRACK_KEY
+                    AudioPlayerFragment.TRACK_KEY
                             to track
                 )
             )
     }
 
     // =========================================================
-    // НАЗАД В MEDIA LIBRARY
+    // RETURN TO MEDIA LIBRARY
     // =========================================================
 
     private fun returnToMediaLibrary() {
@@ -352,8 +375,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             !wasPopped &&
             navController
                 .currentDestination
-                ?.id !=
-            R.id.mediaLibraryFragment
+                ?.id != R.id.mediaLibraryFragment
         ) {
 
             navController.navigate(
@@ -363,7 +385,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
     }
 
     // =========================================================
-    // УДАЛИТЬ ТРЕК
+    // DELETE TRACK DIALOG
     // =========================================================
 
     private fun showDeleteTrackDialog(
@@ -371,7 +393,9 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
     ) {
 
         val dialog =
-            Dialog(requireContext())
+            Dialog(
+                requireContext()
+            )
 
         val dialogView =
             layoutInflater.inflate(
@@ -379,7 +403,9 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
                 null
             )
 
-        dialog.setContentView(dialogView)
+        dialog.setContentView(
+            dialogView
+        )
 
         val message =
             dialogView.findViewById<TextView>(
@@ -408,47 +434,25 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
 
         btnYes.setOnClickListener {
 
-            viewModel.deleteTrack(track)
+            viewModel.deleteTrack(
+                track
+            )
 
             dialog.dismiss()
         }
 
         dialog.setOnShowListener {
 
-            dialog.window?.apply {
-
-                setBackgroundDrawable(
-                    ColorDrawable(
-                        Color.TRANSPARENT
-                    )
-                )
-
-                setLayout(
-                    dpToPx(280),
-                    dpToPx(123)
-                )
-
-                setGravity(
-                    Gravity.CENTER
-                )
-
-                addFlags(
-                    WindowManager.LayoutParams.FLAG_DIM_BEHIND
-                )
-
-                attributes =
-                    attributes.apply {
-
-                        dimAmount = 0.55f
-                    }
-            }
+            configureConfirmDialog(
+                dialog
+            )
         }
 
         dialog.show()
     }
 
     // =========================================================
-    // МЕНЮ ⋮
+    // PLAYLIST MENU
     // =========================================================
 
     private fun showPlaylistMenu(
@@ -501,7 +505,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             )
 
         // =====================================================
-        // ИНФОРМАЦИЯ О ПЛЕЙЛИСТЕ
+        // PLAYLIST INFO
         // =====================================================
 
         playlistName.text =
@@ -512,39 +516,15 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
                 playlist.tracksCount
             )
 
-        val imagePath =
-            playlist.imagePath
-
-        if (
-            !imagePath.isNullOrBlank()
-        ) {
-
-            Glide.with(this)
-                .load(
-                    Uri.parse(
-                        imagePath
-                    )
-                )
-                .placeholder(
-                    R.drawable.ic_placeholder
-                )
-                .error(
-                    R.drawable.ic_placeholder
-                )
-                .into(
-                    playlistCover
-                )
-
-        } else {
-
-            playlistCover
-                .setImageResource(
-                    R.drawable.ic_placeholder
-                )
-        }
+        // Здесь тоже File(imagePath),
+        // а не Uri.parse(imagePath)
+        showPlaylistCover(
+            imageView = playlistCover,
+            imagePath = playlist.imagePath
+        )
 
         // =====================================================
-        // LIGHT / DARK
+        // LIGHT / DARK MODE
         // =====================================================
 
         val darkMode =
@@ -554,7 +534,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             if (darkMode) {
 
                 Color.parseColor(
-                    "#1A1B22"
+                    DARK_BACKGROUND
                 )
 
             } else {
@@ -570,13 +550,13 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             } else {
 
                 Color.parseColor(
-                    "#1A1B22"
+                    DARK_TEXT
                 )
             }
 
         val secondaryTextColor =
             Color.parseColor(
-                "#AEAFB4"
+                SECONDARY_TEXT
             )
 
         playlistName.setTextColor(
@@ -669,6 +649,10 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             )
         }
 
+        // =====================================================
+        // TRANSPARENT MATERIAL CONTAINER
+        // =====================================================
+
         dialog.setOnShowListener {
 
             dialog
@@ -685,7 +669,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
     }
 
     // =========================================================
-    // УДАЛИТЬ ПЛЕЙЛИСТ
+    // DELETE PLAYLIST DIALOG
     // =========================================================
 
     private fun showDeletePlaylistDialog(
@@ -693,7 +677,9 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
     ) {
 
         val dialog =
-            Dialog(requireContext())
+            Dialog(
+                requireContext()
+            )
 
         val dialogView =
             layoutInflater.inflate(
@@ -701,7 +687,9 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
                 null
             )
 
-        dialog.setContentView(dialogView)
+        dialog.setContentView(
+            dialogView
+        )
 
         val message =
             dialogView.findViewById<TextView>(
@@ -738,7 +726,24 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
 
         dialog.setOnShowListener {
 
-            dialog.window?.apply {
+            configureConfirmDialog(
+                dialog
+            )
+        }
+
+        dialog.show()
+    }
+
+    // =========================================================
+    // CONFIRM DIALOG STYLE
+    // =========================================================
+
+    private fun configureConfirmDialog(
+        dialog: Dialog
+    ) {
+
+        dialog.window
+            ?.apply {
 
                 setBackgroundDrawable(
                     ColorDrawable(
@@ -747,8 +752,12 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
                 )
 
                 setLayout(
-                    dpToPx(280),
-                    dpToPx(123)
+                    dpToPx(
+                        CONFIRM_DIALOG_WIDTH
+                    ),
+                    dpToPx(
+                        CONFIRM_DIALOG_HEIGHT
+                    )
                 )
 
                 setGravity(
@@ -756,88 +765,18 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
                 )
 
                 addFlags(
-                    WindowManager.LayoutParams.FLAG_DIM_BEHIND
+                    WindowManager
+                        .LayoutParams
+                        .FLAG_DIM_BEHIND
                 )
 
                 attributes =
                     attributes.apply {
 
-                        dimAmount = 0.55f
+                        dimAmount =
+                            DIALOG_DIM_AMOUNT
                     }
             }
-        }
-
-        dialog.show()
-    }
-    // =========================================================
-    // СТИЛЬ ALERT DIALOG
-    // =========================================================
-
-    private fun applyLightDialogStyle(
-        dialog: AlertDialog
-    ) {
-
-        val blue =
-            Color.parseColor(
-                "#3772E7"
-            )
-
-        val darkText =
-            Color.parseColor(
-                "#1A1B22"
-            )
-
-        dialog
-            .getButton(
-                AlertDialog.BUTTON_NEGATIVE
-            )
-            ?.setTextColor(
-                blue
-            )
-
-        dialog
-            .getButton(
-                AlertDialog.BUTTON_POSITIVE
-            )
-            ?.setTextColor(
-                blue
-            )
-
-        dialog
-            .findViewById<TextView>(
-                android.R.id.message
-            )
-            ?.setTextColor(
-                darkText
-            )
-
-        val background =
-            GradientDrawable().apply {
-
-                setColor(
-                    Color.WHITE
-                )
-
-                cornerRadius =
-                    dpToPx(
-                        ALERT_DIALOG_RADIUS
-                    ).toFloat()
-            }
-
-        dialog.window
-            ?.setBackgroundDrawable(
-                background
-            )
-
-        // Размер окна ближе к Figma
-
-        dialog.window
-            ?.setLayout(
-                dpToPx(
-                    ALERT_DIALOG_WIDTH
-                ),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
     }
 
     // =========================================================
@@ -945,7 +884,7 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
     }
 
     // =========================================================
-    // МИНУТЫ + ТРЕКИ
+    // MINUTES + TRACKS
     // =========================================================
 
     private fun updatePlaylistInfo() {
@@ -954,6 +893,11 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
             tvTracksCount
                 ?: return
 
+        /*
+         * Пока список треков ещё не загрузился,
+         * отображаем хотя бы сохранённый
+         * tracksCount из Playlist.
+         */
         if (
             currentTracks.isEmpty()
         ) {
@@ -988,6 +932,10 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
                     )
     }
 
+    // =========================================================
+    // PLURALS: TRACKS
+    // =========================================================
+
     private fun getTracksCountText(
         count: Int
     ): String {
@@ -999,6 +947,10 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
                 count
             )
     }
+
+    // =========================================================
+    // PLURALS: MINUTES
+    // =========================================================
 
     private fun getMinutesText(
         minutes: Long
@@ -1082,16 +1034,28 @@ class PlaylistFragment : Fragment(R.layout.fragment_playlist) {
         private const val MILLISECONDS_IN_MINUTE =
             60_000L
 
-
-        private const val BOTTOM_SHEET_PEEK_HEIGHT = 275
+        private const val BOTTOM_SHEET_PEEK_HEIGHT =
+            275
 
         private const val BOTTOM_SHEET_RADIUS =
             16
 
-        private const val ALERT_DIALOG_RADIUS =
-            4
-
-        private const val ALERT_DIALOG_WIDTH =
+        private const val CONFIRM_DIALOG_WIDTH =
             280
+
+        private const val CONFIRM_DIALOG_HEIGHT =
+            123
+
+        private const val DIALOG_DIM_AMOUNT =
+            0.55f
+
+        private const val DARK_BACKGROUND =
+            "#1A1B22"
+
+        private const val DARK_TEXT =
+            "#1A1B22"
+
+        private const val SECONDARY_TEXT =
+            "#AEAFB4"
     }
 }

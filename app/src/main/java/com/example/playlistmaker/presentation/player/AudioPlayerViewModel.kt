@@ -10,6 +10,9 @@ import com.example.playlistmaker.domain.models.Track
 import com.example.playlistmaker.domain.playlists.PlaylistsInteractor
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -18,85 +21,162 @@ class AudioPlayerViewModel(
     private val playlistsInteractor: PlaylistsInteractor
 ) : ViewModel() {
 
-    private var playerState = PlayerStateType.DEFAULT
+    private var playerState =
+        PlayerStateType.DEFAULT
 
-    private val stateLiveData = MutableLiveData(PlayerState())
-    fun observeState(): LiveData<PlayerState> = stateLiveData
+    // =========================================================
+    // PLAYER STATE
+    // =========================================================
 
-    private val playlistsLiveData = MutableLiveData<List<Playlist>>()
-    fun observePlaylists(): LiveData<List<Playlist>> = playlistsLiveData
+    private val stateLiveData =
+        MutableLiveData(
+            PlayerState()
+        )
 
-    private val playlistAddResultLiveData =
-        MutableLiveData<PlaylistAddResult?>()
+    fun observeState():
+            LiveData<PlayerState> =
+        stateLiveData
 
-    fun observePlaylistAddResult(): LiveData<PlaylistAddResult?> =
-        playlistAddResultLiveData
+    // =========================================================
+    // PLAYLISTS
+    // =========================================================
 
-    private var timerJob: Job? = null
+    private val playlistsLiveData =
+        MutableLiveData<List<Playlist>>()
 
-    // Храним URL трека, который уже был передан в MediaPlayer
-    private var currentPreviewUrl: String? = null
+    fun observePlaylists():
+            LiveData<List<Playlist>> =
+        playlistsLiveData
+
+    // =========================================================
+    // ADD TRACK RESULT
+    //
+    // SharedFlow используется как одноразовое событие.
+    //
+    // replay = 0:
+    // старый результат НЕ будет отправлен новому observer.
+    // =========================================================
+
+    private val playlistAddResultFlow =
+        MutableSharedFlow<PlaylistAddResult>(
+            replay = 0,
+            extraBufferCapacity = 1
+        )
+
+    fun observePlaylistAddResult():
+            Flow<PlaylistAddResult> =
+        playlistAddResultFlow
+            .asSharedFlow()
+
+    // =========================================================
+    // TIMER
+    // =========================================================
+
+    private var timerJob:
+            Job? = null
+
+    // =========================================================
+    // CURRENT TRACK URL
+    // =========================================================
+
+    private var currentPreviewUrl:
+            String? = null
+
+    // =========================================================
+    // INIT
+    // =========================================================
 
     init {
         observePlaylistsFromDatabase()
     }
 
+    // =========================================================
+    // OBSERVE PLAYLISTS FROM ROOM
+    // =========================================================
+
     private fun observePlaylistsFromDatabase() {
+
         viewModelScope.launch {
+
             playlistsInteractor
                 .getPlaylists()
                 .collect { playlists ->
-                    playlistsLiveData.value = playlists
+
+                    playlistsLiveData.value =
+                        playlists
                 }
         }
     }
+
+    // =========================================================
+    // ADD TRACK TO PLAYLIST
+    // =========================================================
 
     fun addTrackToPlaylist(
         track: Track,
         playlist: Playlist
     ) {
+
         viewModelScope.launch {
 
-            val isAdded = playlistsInteractor.addTrackToPlaylist(
-                track = track,
-                playlist = playlist
-            )
+            val isAdded =
+                playlistsInteractor
+                    .addTrackToPlaylist(
+                        track = track,
+                        playlist = playlist
+                    )
 
-            playlistAddResultLiveData.value =
+            /*
+             * Если в этот момент Bottom Sheet открыт,
+             * событие получит его collector.
+             *
+             * Если Bottom Sheet уже закрыт —
+             * событие не сохранится и не появится
+             * при следующем открытии.
+             */
+            playlistAddResultFlow.emit(
                 PlaylistAddResult(
-                    playlistName = playlist.name,
-                    isAdded = isAdded
+                    playlistName =
+                        playlist.name,
+
+                    isAdded =
+                        isAdded
                 )
+            )
         }
     }
 
-    fun playlistAddResultHandled() {
-        playlistAddResultLiveData.value = null
-    }
+    // =========================================================
+    // PREPARE PLAYER
+    // =========================================================
 
-    fun preparePlayer(previewUrl: String?) {
+    fun preparePlayer(
+        previewUrl: String?
+    ) {
 
-        // Если ссылки нет — ничего не делаем
-        if (previewUrl.isNullOrBlank()) return
+        if (
+            previewUrl.isNullOrBlank()
+        ) {
+            return
+        }
 
         /*
-         * Если этот трек уже был передан в MediaPlayer,
-         * повторно setDataSource() вызывать нельзя.
-         *
-         * Именно из-за повторного setDataSource()
-         * происходил IllegalStateException.
+         * Если этот же трек уже подготовлен,
+         * повторно setDataSource не вызываем.
          */
-        if (currentPreviewUrl == previewUrl) return
+        if (
+            currentPreviewUrl ==
+            previewUrl
+        ) {
+            return
+        }
 
         stopTimer()
 
-        /*
-         * Возвращаем MediaPlayer в состояние Idle,
-         * чтобы можно было безопасно вызвать setDataSource().
-         */
         mediaPlayer.reset()
 
-        playerState = PlayerStateType.DEFAULT
+        playerState =
+            PlayerStateType.DEFAULT
 
         stateLiveData.value =
             currentState().copy(
@@ -104,60 +184,97 @@ class AudioPlayerViewModel(
                 currentTime = DEFAULT_TIME
             )
 
-        mediaPlayer.setOnPreparedListener {
-            playerState = PlayerStateType.PREPARED
+        // =====================================================
+        // PREPARED
+        // =====================================================
 
-            stateLiveData.value =
-                currentState().copy(
-                    isPlaying = false,
-                    currentTime = DEFAULT_TIME
-                )
-        }
+        mediaPlayer
+            .setOnPreparedListener {
 
-        mediaPlayer.setOnCompletionListener {
-            playerState = PlayerStateType.PREPARED
+                playerState =
+                    PlayerStateType.PREPARED
 
-            stopTimer()
+                stateLiveData.value =
+                    currentState().copy(
+                        isPlaying = false,
+                        currentTime = DEFAULT_TIME
+                    )
+            }
 
-            // Возвращаем трек в начало
-            mediaPlayer.seekTo(0)
+        // =====================================================
+        // COMPLETION
+        // =====================================================
 
-            stateLiveData.value =
-                currentState().copy(
-                    isPlaying = false,
-                    currentTime = DEFAULT_TIME
-                )
-        }
+        mediaPlayer
+            .setOnCompletionListener {
 
-        mediaPlayer.setOnErrorListener { _, _, _ ->
+                playerState =
+                    PlayerStateType.PREPARED
 
-            stopTimer()
+                stopTimer()
 
-            playerState = PlayerStateType.DEFAULT
-            currentPreviewUrl = null
-
-            stateLiveData.value =
-                currentState().copy(
-                    isPlaying = false,
-                    currentTime = DEFAULT_TIME
+                mediaPlayer.seekTo(
+                    0
                 )
 
-            true
-        }
+                stateLiveData.value =
+                    currentState().copy(
+                        isPlaying = false,
+                        currentTime = DEFAULT_TIME
+                    )
+            }
+
+        // =====================================================
+        // ERROR
+        // =====================================================
+
+        mediaPlayer
+            .setOnErrorListener {
+                    _,
+                    _,
+                    _ ->
+
+                stopTimer()
+
+                playerState =
+                    PlayerStateType.DEFAULT
+
+                currentPreviewUrl =
+                    null
+
+                stateLiveData.value =
+                    currentState().copy(
+                        isPlaying = false,
+                        currentTime = DEFAULT_TIME
+                    )
+
+                true
+            }
+
+        // =====================================================
+        // DATA SOURCE
+        // =====================================================
 
         try {
 
-            mediaPlayer.setDataSource(previewUrl)
+            mediaPlayer.setDataSource(
+                previewUrl
+            )
 
-            // Запоминаем URL, чтобы не загружать тот же трек повторно
-            currentPreviewUrl = previewUrl
+            currentPreviewUrl =
+                previewUrl
 
             mediaPlayer.prepareAsync()
 
-        } catch (e: Exception) {
+        } catch (
+            exception: Exception
+        ) {
 
-            currentPreviewUrl = null
-            playerState = PlayerStateType.DEFAULT
+            currentPreviewUrl =
+                null
+
+            playerState =
+                PlayerStateType.DEFAULT
 
             stateLiveData.value =
                 currentState().copy(
@@ -167,101 +284,162 @@ class AudioPlayerViewModel(
         }
     }
 
+    // =========================================================
+    // PLAYBACK CONTROL
+    // =========================================================
+
     fun playbackControl() {
-        when (playerState) {
+
+        when (
+            playerState
+        ) {
 
             PlayerStateType.PLAYING -> {
+
                 pausePlayer()
             }
 
             PlayerStateType.PREPARED -> {
+
                 startPlayer()
             }
 
             PlayerStateType.DEFAULT -> {
+
                 Unit
             }
         }
     }
 
+    // =========================================================
+    // PAUSE
+    // =========================================================
+
     fun pausePlayer() {
 
-        if (playerState != PlayerStateType.PLAYING) return
+        if (
+            playerState !=
+            PlayerStateType.PLAYING
+        ) {
+            return
+        }
 
         mediaPlayer.pause()
 
-        playerState = PlayerStateType.PREPARED
+        playerState =
+            PlayerStateType.PREPARED
 
         stopTimer()
 
         stateLiveData.value =
             currentState().copy(
                 isPlaying = false,
-                currentTime = formatTime(
-                    mediaPlayer.currentPosition
-                )
+                currentTime =
+                    formatTime(
+                        mediaPlayer.currentPosition
+                    )
             )
     }
 
+    // =========================================================
+    // START
+    // =========================================================
+
     private fun startPlayer() {
 
-        if (playerState != PlayerStateType.PREPARED) return
+        if (
+            playerState !=
+            PlayerStateType.PREPARED
+        ) {
+            return
+        }
 
         mediaPlayer.start()
 
-        playerState = PlayerStateType.PLAYING
+        playerState =
+            PlayerStateType.PLAYING
 
         stateLiveData.value =
             currentState().copy(
                 isPlaying = true,
-                currentTime = formatTime(
-                    mediaPlayer.currentPosition
-                )
+                currentTime =
+                    formatTime(
+                        mediaPlayer.currentPosition
+                    )
             )
 
         startTimer()
     }
 
+    // =========================================================
+    // TIMER
+    // =========================================================
+
     private fun startTimer() {
 
         stopTimer()
 
-        timerJob = viewModelScope.launch {
+        timerJob =
+            viewModelScope.launch {
 
-            while (
-                isActive &&
-                playerState == PlayerStateType.PLAYING
-            ) {
+                while (
+                    isActive &&
+                    playerState ==
+                    PlayerStateType.PLAYING
+                ) {
 
-                stateLiveData.value =
-                    currentState().copy(
-                        isPlaying = true,
-                        currentTime = formatTime(
-                            mediaPlayer.currentPosition
+                    stateLiveData.value =
+                        currentState().copy(
+                            isPlaying = true,
+                            currentTime =
+                                formatTime(
+                                    mediaPlayer
+                                        .currentPosition
+                                )
                         )
-                    )
 
-                delay(TIMER_DELAY)
+                    delay(
+                        TIMER_DELAY
+                    )
+                }
             }
-        }
     }
 
     private fun stopTimer() {
+
         timerJob?.cancel()
-        timerJob = null
+
+        timerJob =
+            null
     }
 
-    private fun currentState(): PlayerState {
-        return stateLiveData.value ?: PlayerState()
+    // =========================================================
+    // CURRENT STATE
+    // =========================================================
+
+    private fun currentState():
+            PlayerState {
+
+        return stateLiveData.value
+            ?: PlayerState()
     }
+
+    // =========================================================
+    // FORMAT TIME
+    // =========================================================
 
     private fun formatTime(
         timeMillis: Int
     ): String {
 
-        val seconds = timeMillis / 1000
-        val minutes = seconds / 60
-        val remainingSeconds = seconds % 60
+        val seconds =
+            timeMillis / 1000
+
+        val minutes =
+            seconds / 60
+
+        val remainingSeconds =
+            seconds % 60
 
         return String.format(
             "%02d:%02d",
@@ -270,26 +448,50 @@ class AudioPlayerViewModel(
         )
     }
 
+    // =========================================================
+    // CLEAR
+    // =========================================================
+
     override fun onCleared() {
 
         stopTimer()
 
-        mediaPlayer.setOnPreparedListener(null)
-        mediaPlayer.setOnCompletionListener(null)
-        mediaPlayer.setOnErrorListener(null)
+        mediaPlayer
+            .setOnPreparedListener(
+                null
+            )
+
+        mediaPlayer
+            .setOnCompletionListener(
+                null
+            )
+
+        mediaPlayer
+            .setOnErrorListener(
+                null
+            )
 
         mediaPlayer.release()
 
-        currentPreviewUrl = null
+        currentPreviewUrl =
+            null
 
         super.onCleared()
     }
 
     companion object {
-        private const val TIMER_DELAY = 300L
-        private const val DEFAULT_TIME = "00:00"
+
+        private const val TIMER_DELAY =
+            300L
+
+        private const val DEFAULT_TIME =
+            "00:00"
     }
 }
+
+// =============================================================
+// ADD RESULT
+// =============================================================
 
 data class PlaylistAddResult(
     val playlistName: String,

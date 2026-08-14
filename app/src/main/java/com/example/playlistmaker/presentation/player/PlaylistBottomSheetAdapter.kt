@@ -65,20 +65,32 @@ class PlaylistBottomSheetAdapter(
 
             name.text = playlist.name
 
-            count.text = "${playlist.tracksCount} треков"
+            count.text =
+                itemView.resources.getQuantityString(
+                    R.plurals.tracks_count,
+                    playlist.tracksCount,
+                    playlist.tracksCount
+                )
 
             if (playlist.imagePath.isNullOrBlank()) {
-                cover.setImageResource(R.drawable.ic_placeholder)
-            } else {
-                Glide.with(itemView)
-                    .load(File(playlist.imagePath))
-                    .placeholder(R.drawable.ic_placeholder)
-                    .error(R.drawable.ic_placeholder)
-                    .into(cover)
-            }
 
-            itemView.setOnClickListener {
-                onPlaylistClick(playlist)
+                cover.setImageResource(
+                    R.drawable.ic_placeholder
+                )
+
+            } else {
+
+                Glide.with(itemView)
+                    .load(
+                        File(playlist.imagePath)
+                    )
+                    .placeholder(
+                        R.drawable.ic_placeholder
+                    )
+                    .error(
+                        R.drawable.ic_placeholder
+                    )
+                    .into(cover)
             }
         }
     }

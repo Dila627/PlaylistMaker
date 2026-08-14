@@ -11,77 +11,116 @@ import com.google.android.material.tabs.TabLayoutMediator
 class MediaLibraryFragment :
     Fragment(R.layout.fragment_media_library) {
 
-    private var tabLayoutMediator: TabLayoutMediator? = null
-    private var viewPager: ViewPager2? = null
+    private var tabLayoutMediator:
+            TabLayoutMediator? = null
+
+    private var viewPager:
+            ViewPager2? = null
 
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?
     ) {
-        super.onViewCreated(view, savedInstanceState)
+        super.onViewCreated(
+            view,
+            savedInstanceState
+        )
+
+        // =====================================================
+        // VIEW PAGER
+        // =====================================================
 
         viewPager =
-            view.findViewById(R.id.viewPager)
+            view.findViewById(
+                R.id.viewPager
+            )
+
+        // =====================================================
+        // TAB LAYOUT
+        // =====================================================
 
         val tabLayout =
             view.findViewById<TabLayout>(
                 R.id.tabLayout
             )
 
+        // =====================================================
+        // ADAPTER
+        // =====================================================
+
         /*
-         * ВАЖНО:
+         * Передаём именно MediaLibraryFragment,
+         * а не Activity.
          *
-         * Передаём именно MediaLibraryFragment (this),
-         * а не requireActivity().
-         *
-         * Тогда страницы ViewPager будут дочерними
-         * Fragment этого MediaLibraryFragment.
+         * Тогда страницы ViewPager являются
+         * дочерними Fragment этого экрана.
          */
         viewPager?.adapter =
-            MediaLibraryPagerAdapter(this)
+            MediaLibraryPagerAdapter(
+                this
+            )
+
+        // =====================================================
+        // TAB LAYOUT MEDIATOR
+        // =====================================================
 
         tabLayoutMediator =
             TabLayoutMediator(
                 tabLayout,
-                requireNotNull(viewPager)
+                requireNotNull(
+                    viewPager
+                )
             ) { tab, position ->
 
                 tab.text =
                     when (position) {
 
-                        0 -> {
+                        FAVORITES_POSITION -> {
+
                             getString(
                                 R.string.favorite_tracks
                             )
                         }
 
-                        1 -> {
+                        else -> {
+
                             getString(
                                 R.string.playlists
                             )
                         }
-
-                        else -> {
-                            ""
-                        }
                     }
             }
 
-        tabLayoutMediator?.attach()
+        tabLayoutMediator
+            ?.attach()
     }
+
+    // =========================================================
+    // CLEANUP
+    // =========================================================
 
     override fun onDestroyView() {
 
-        tabLayoutMediator?.detach()
-        tabLayoutMediator = null
+        tabLayoutMediator
+            ?.detach()
 
-        viewPager?.adapter = null
-        viewPager = null
+        tabLayoutMediator =
+            null
+
+        viewPager
+            ?.adapter =
+            null
+
+        viewPager =
+            null
 
         super.onDestroyView()
     }
 
     companion object {
+
+        private const val FAVORITES_POSITION =
+            0
 
         fun newInstance() =
             MediaLibraryFragment()
