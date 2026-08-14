@@ -85,7 +85,9 @@ class AudioPlayerActivity : AppCompatActivity() {
             )
         }
 
-        viewModel.preparePlayer(track?.previewUrl)
+        track?.let { selectedTrack ->
+            viewModel.initialize(selectedTrack)
+        }
 
         btnPlay.setOnClickListener {
             viewModel.playbackControl()

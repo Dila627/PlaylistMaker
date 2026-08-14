@@ -4,9 +4,11 @@ import android.content.Context
 import android.media.MediaPlayer
 import com.example.playlistmaker.data.network.ITunesApi
 import com.example.playlistmaker.data.network.RetrofitClient
+import com.example.playlistmaker.data.repository.FavoriteTracksRepositoryImpl
 import com.example.playlistmaker.data.repository.SearchHistoryRepositoryImpl
 import com.example.playlistmaker.data.repository.SettingsRepositoryImpl
 import com.example.playlistmaker.data.repository.TracksRepositoryImpl
+import com.example.playlistmaker.domain.api.FavoriteTracksRepository
 import com.example.playlistmaker.domain.api.SearchHistoryRepository
 import com.example.playlistmaker.domain.api.SettingsRepository
 import com.example.playlistmaker.domain.api.TracksRepository
@@ -32,7 +34,10 @@ val dataModule = module {
     }
 
     single<TracksRepository> {
-        TracksRepositoryImpl(get())
+        TracksRepositoryImpl(
+            iTunesApi = get(),
+            favoriteTrackDao = get()
+        )
     }
 
     single<SearchHistoryRepository> {
@@ -48,5 +53,12 @@ val dataModule = module {
 
     factory {
         MediaPlayer()
+    }
+
+    single<FavoriteTracksRepository> {
+        FavoriteTracksRepositoryImpl(
+            favoriteTrackDao = get(),
+            mapper = get()
+        )
     }
 }

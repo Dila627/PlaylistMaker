@@ -23,5 +23,6 @@ class App : Application(), KoinComponent {
         settingsInteractor.updateThemeSetting(
             settingsInteractor.getThemeSettings()
         )
+
     }
 }
