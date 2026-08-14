@@ -2,6 +2,8 @@ package com.example.playlistmaker.di
 
 import android.content.Context
 import android.media.MediaPlayer
+import androidx.room.Room
+import com.example.playlistmaker.data.db.AppDatabase
 import com.example.playlistmaker.data.network.ITunesApi
 import com.example.playlistmaker.data.network.RetrofitClient
 import com.example.playlistmaker.data.repository.SearchHistoryRepositoryImpl
@@ -13,6 +15,8 @@ import com.example.playlistmaker.domain.api.TracksRepository
 import com.google.gson.Gson
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import com.example.playlistmaker.data.repository.PlaylistsRepositoryImpl
+import com.example.playlistmaker.domain.api.PlaylistsRepository
 
 val dataModule = module {
 
@@ -29,6 +33,18 @@ val dataModule = module {
             "playlist_maker_prefs",
             Context.MODE_PRIVATE
         )
+    }
+
+    single {
+        Room.databaseBuilder(
+            androidContext(),
+            AppDatabase::class.java,
+            "playlist_maker_database.db"
+        ).build()
+    }
+
+    single {
+        get<AppDatabase>().playlistDao()
     }
 
     single<TracksRepository> {
@@ -48,5 +64,11 @@ val dataModule = module {
 
     factory {
         MediaPlayer()
+    }
+
+    single<PlaylistsRepository> {
+        PlaylistsRepositoryImpl(
+            playlistDao = get()
+        )
     }
 }

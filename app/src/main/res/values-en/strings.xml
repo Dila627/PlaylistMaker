@@ -52,7 +52,71 @@
 
     <string name="favorite_tracks">Favorite Tracks</string>
     <string name="playlists">Playlists</string>
-    <string name="new_playlist">New Playlist</string>
     <string name="empty_favorite_tracks">Your media library is empty</string>
     <string name="empty_playlists">You haven\'t created any playlists yet</string>
+    <!-- Playlists -->
+    <string name="no_playlists">You haven\'t created any playlists yet</string>
+    <string name="add_to_playlist">Add to playlist</string>
+
+    <string name="new_playlist">New playlist</string>
+
+    <string name="share">Share</string>
+
+    <string name="edit_playlist">Edit information</string>
+
+    <string name="delete_playlist">Delete playlist</string>
+
+    <string name="delete_track_question">Do you want to delete this track?</string>
+
+    <string name="delete_playlist_question">Do you want to delete the playlist “%1$s”?</string>
+
+    <string name="no">NO</string>
+
+    <string name="yes">YES</string>
+
+    <string name="create">Create</string>
+
+    <string name="save">Save</string>
+
+    <string name="playlist_created">Playlist %1$s created</string>
+
+    <string name="playlist_saved">Playlist %1$s saved</string>
+
+    <string name="playlist_share_empty">
+    There are no tracks in this playlist to share
+</string>
+
+    <string name="finish_playlist_creation">
+    Finish creating the playlist?
+</string>
+
+    <string name="finish_playlist_editing">
+    Finish editing?
+</string>
+
+    <string name="unsaved_playlist_data">
+    All unsaved data will be lost
+</string>
+
+    <string name="unsaved_playlist_changes">
+    All unsaved changes will be lost
+</string>
+
+    <string name="cancel">Cancel</string>
+
+    <string name="finish">Finish</string>
+
+    <!-- Track count -->
+
+    <plurals name="tracks_count">
+        <item quantity="one">%d track</item>
+        <item quantity="other">%d tracks</item>
+    </plurals>
+
+    <!-- Minutes -->
+
+    <plurals name="minutes_count">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
 </resources>

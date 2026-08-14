@@ -92,5 +92,17 @@
         <item name="textAllCaps">false</item>
         <item name="android:textSize">14sp</item>
     </style>
+    <style
+        name="PlaylistLightAlertDialog"
+        parent="Theme.AppCompat.Light.Dialog.Alert">
 
+        <item name="android:windowBackground">#FFFFFF</item>
+
+        <item name="android:textColorPrimary">#1A1B22</item>
+
+        <item name="android:colorAccent">#3772E7</item>
+
+        <item name="colorAccent">#3772E7</item>
+
+    </style>
 </resources>

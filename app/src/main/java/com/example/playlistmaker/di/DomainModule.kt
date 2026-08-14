@@ -7,6 +7,8 @@ import com.example.playlistmaker.domain.search.SearchHistoryInteractor
 import com.example.playlistmaker.domain.search.TracksInteractor
 import com.example.playlistmaker.domain.settings.SettingsInteractor
 import org.koin.dsl.module
+import com.example.playlistmaker.domain.impl.PlaylistsInteractorImpl
+import com.example.playlistmaker.domain.playlists.PlaylistsInteractor
 
 val domainModule = module {
 
@@ -20,5 +22,10 @@ val domainModule = module {
 
     single<SettingsInteractor> {
         SettingsInteractorImpl(get())
+    }
+    single<PlaylistsInteractor> {
+        PlaylistsInteractorImpl(
+            repository = get()
+        )
     }
 }

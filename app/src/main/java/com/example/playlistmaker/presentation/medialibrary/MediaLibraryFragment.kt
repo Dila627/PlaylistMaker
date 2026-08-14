@@ -8,33 +8,70 @@ import com.example.playlistmaker.R
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
-class MediaLibraryFragment : Fragment(R.layout.fragment_media_library) {
+class MediaLibraryFragment :
+    Fragment(R.layout.fragment_media_library) {
 
     private var tabLayoutMediator: TabLayoutMediator? = null
     private var viewPager: ViewPager2? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewPager = view.findViewById(R.id.viewPager)
-        val tabLayout = view.findViewById<TabLayout>(R.id.tabLayout)
+        viewPager =
+            view.findViewById(R.id.viewPager)
 
-        viewPager?.adapter = MediaLibraryPagerAdapter(requireActivity())
+        val tabLayout =
+            view.findViewById<TabLayout>(
+                R.id.tabLayout
+            )
 
-        tabLayoutMediator = TabLayoutMediator(
-            tabLayout,
-            requireNotNull(viewPager)
-        ) { tab, position ->
-            tab.text = when (position) {
-                0 -> getString(R.string.favorite_tracks)
-                else -> getString(R.string.playlists)
+        /*
+         * ВАЖНО:
+         *
+         * Передаём именно MediaLibraryFragment (this),
+         * а не requireActivity().
+         *
+         * Тогда страницы ViewPager будут дочерними
+         * Fragment этого MediaLibraryFragment.
+         */
+        viewPager?.adapter =
+            MediaLibraryPagerAdapter(this)
+
+        tabLayoutMediator =
+            TabLayoutMediator(
+                tabLayout,
+                requireNotNull(viewPager)
+            ) { tab, position ->
+
+                tab.text =
+                    when (position) {
+
+                        0 -> {
+                            getString(
+                                R.string.favorite_tracks
+                            )
+                        }
+
+                        1 -> {
+                            getString(
+                                R.string.playlists
+                            )
+                        }
+
+                        else -> {
+                            ""
+                        }
+                    }
             }
-        }
 
         tabLayoutMediator?.attach()
     }
 
     override fun onDestroyView() {
+
         tabLayoutMediator?.detach()
         tabLayoutMediator = null
 
@@ -45,6 +82,8 @@ class MediaLibraryFragment : Fragment(R.layout.fragment_media_library) {
     }
 
     companion object {
-        fun newInstance() = MediaLibraryFragment()
+
+        fun newInstance() =
+            MediaLibraryFragment()
     }
 }

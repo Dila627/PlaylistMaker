@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/playlist_header_background">
+
+    <!-- ================================================= -->
+    <!-- ВЕРХ -->
+    <!-- ================================================= -->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/playlistHeader"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/playlist_header_background">
+
+        <!-- BACK -->
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@null"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/playlist_header_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- COVER / PLACEHOLDER -->
+
+        <ImageView
+            android:id="@+id/ivPlaylistCover"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_marginTop="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_placeholder"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnBack" />
+
+        <!-- PLAYLIST NAME -->
+
+        <TextView
+            android:id="@+id/tvPlaylistName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:textColor="@color/playlist_header_text"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivPlaylistCover" />
+
+        <!-- DESCRIPTION -->
+
+        <TextView
+            android:id="@+id/tvPlaylistDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:includeFontPadding="false"
+            android:textColor="@color/playlist_header_text"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPlaylistName" />
+
+        <!-- TIME / TRACK COUNT -->
+
+        <TextView
+            android:id="@+id/tvTracksCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:includeFontPadding="false"
+            android:textColor="@color/playlist_header_text"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPlaylistDescription" />
+
+        <!-- SHARE -->
+
+        <ImageButton
+            android:id="@+id/btnShare"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@null"
+            android:padding="12dp"
+            android:src="@drawable/ic_share"
+            app:tint="@color/playlist_header_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTracksCount" />
+
+        <!-- MORE -->
+
+        <ImageButton
+            android:id="@+id/btnMore"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@null"
+            android:padding="12dp"
+            android:src="@drawable/ic_more"
+            app:tint="@color/playlist_header_icon"
+            app:layout_constraintStart_toEndOf="@id/btnShare"
+            app:layout_constraintTop_toBottomOf="@id/tvTracksCount" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <!-- ================================================= -->
+    <!-- BOTTOM SHEET -->
+    <!-- ================================================= -->
+
+    <LinearLayout
+        android:id="@+id/playlistTracksBottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_playlist_bottom_sheet"
+        android:orientation="vertical"
+        app:behavior_hideable="false"
+        app:behavior_peekHeight="275dp"
+        app:behavior_skipCollapsed="false"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <!-- HANDLE -->
+
+        <View
+            android:layout_width="50dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_bottom_sheet_handle" />
+
+        <!-- TRACKS -->
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPlaylistTracks"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

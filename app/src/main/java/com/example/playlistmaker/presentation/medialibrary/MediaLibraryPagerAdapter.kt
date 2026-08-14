@@ -1,19 +1,42 @@
 package com.example.playlistmaker.presentation.medialibrary
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
 class MediaLibraryPagerAdapter(
-    activity: FragmentActivity
-) : FragmentStateAdapter(activity) {
+    fragment: Fragment
+) : FragmentStateAdapter(fragment) {
 
-    override fun getItemCount(): Int = 2
+    override fun getItemCount(): Int =
+        PAGE_COUNT
 
-    override fun createFragment(position: Int): Fragment {
+    override fun createFragment(
+        position: Int
+    ): Fragment {
+
         return when (position) {
-            0 -> FavoriteTracksFragment.newInstance()
-            else -> PlaylistsFragment.newInstance()
+
+            FAVORITES_POSITION -> {
+                FavoriteTracksFragment.newInstance()
+            }
+
+            PLAYLISTS_POSITION -> {
+                PlaylistsFragment.newInstance()
+            }
+
+            else -> {
+                throw IllegalArgumentException(
+                    "Unknown ViewPager position: $position"
+                )
+            }
         }
+    }
+
+    companion object {
+
+        private const val PAGE_COUNT = 2
+
+        private const val FAVORITES_POSITION = 0
+        private const val PLAYLISTS_POSITION = 1
     }
 }

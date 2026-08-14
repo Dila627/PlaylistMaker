@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/playlist_sheet_background"
+    android:orientation="vertical"
+    android:paddingBottom="24dp">
+
+    <!-- Полоска сверху -->
+
+    <View
+        android:layout_width="50dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_bottom_sheet_handle" />
+
+    <!-- Информация о плейлисте -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <!-- ОБЛОЖКА -->
+
+        <ImageView
+            android:id="@+id/ivMenuPlaylistCover"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_placeholder" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- НАЗВАНИЕ -->
+
+            <TextView
+                android:id="@+id/tvMenuPlaylistName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/playlist_primary_text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- КОЛИЧЕСТВО ТРЕКОВ -->
+
+            <TextView
+                android:id="@+id/tvMenuTracksCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/playlist_secondary_text"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ПОДЕЛИТЬСЯ -->
+
+    <TextView
+        android:id="@+id/btnMenuShare"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/share"
+        android:textColor="@color/playlist_primary_text"
+        android:textSize="16sp" />
+
+    <!-- РЕДАКТИРОВАТЬ -->
+
+    <TextView
+        android:id="@+id/btnMenuEdit"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/edit_playlist"
+        android:textColor="@color/playlist_primary_text"
+        android:textSize="16sp" />
+
+    <!-- УДАЛИТЬ -->
+
+    <TextView
+        android:id="@+id/btnMenuDelete"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/delete_playlist"
+        android:textColor="@color/playlist_primary_text"
+        android:textSize="16sp" />
+
+</LinearLayout>

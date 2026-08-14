@@ -23,4 +23,28 @@
         android:id="@+id/audioPlayerFragment"
         android:name="com.example.playlistmaker.presentation.player.AudioPlayerFragment"
         android:label="@string/track_cover" />
+
+
+    <fragment
+        android:id="@+id/playlistFragment"
+        android:name="com.example.playlistmaker.presentation.playlist.PlaylistFragment"
+        android:label="Плейлист">
+
+        <argument
+            android:name="playlistId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/createPlaylistFragment"
+        android:name="com.example.playlistmaker.presentation.playlist.CreatePlaylistFragment"
+        android:label="Новый плейлист">
+
+        <argument
+            android:name="playlistId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+
+    </fragment>
 </navigation>
