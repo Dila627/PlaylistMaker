@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -156,11 +157,13 @@ class AudioPlayerFragment :
         // =====================================================
 
         tvTrackName.text =
-            track?.trackName
+            track
+                ?.trackName
                 .orEmpty()
 
         tvArtist.text =
-            track?.artistName
+            track
+                ?.artistName
                 .orEmpty()
 
         tvCurrentTime?.text =
@@ -181,11 +184,13 @@ class AudioPlayerFragment :
                 .orEmpty()
 
         tvGenreValue.text =
-            track?.primaryGenreName
+            track
+                ?.primaryGenreName
                 .orEmpty()
 
         tvCountryValue.text =
-            track?.country
+            track
+                ?.country
                 .orEmpty()
 
         val album =
@@ -231,7 +236,7 @@ class AudioPlayerFragment :
         // COVER
         // =====================================================
 
-        Glide.with(this)
+        Glide.with(view)
             .load(
                 track
                     ?.getCoverArtwork()
@@ -247,18 +252,22 @@ class AudioPlayerFragment :
             )
 
         // =====================================================
-        // PLAYER STATE
+        // STATE
         // =====================================================
 
         observePlayerState()
 
         // =====================================================
-        // PREPARE PLAYER
+        // INITIALIZE
         // =====================================================
 
-        viewModel.preparePlayer(
-            track?.previewUrl
-        )
+        track
+            ?.let { selectedTrack ->
+
+                viewModel.initialize(
+                    selectedTrack
+                )
+            }
 
         // =====================================================
         // PLAY / PAUSE
@@ -269,6 +278,17 @@ class AudioPlayerFragment :
 
                 viewModel
                     .playbackControl()
+            }
+
+        // =====================================================
+        // FAVORITE
+        // =====================================================
+
+        btnLike
+            ?.setOnClickListener {
+
+                viewModel
+                    .onFavoriteClicked()
             }
 
         // =====================================================
@@ -285,34 +305,6 @@ class AudioPlayerFragment :
                             selectedTrack
                         )
                     }
-            }
-
-        // =====================================================
-        // LIKE
-        // =====================================================
-
-        var isLiked =
-            false
-
-        btnLike
-            ?.setOnClickListener {
-
-                isLiked =
-                    !isLiked
-
-                btnLike
-                    ?.setImageResource(
-                        if (isLiked) {
-
-                            R.drawable
-                                .filled_like_icon
-
-                        } else {
-
-                            R.drawable
-                                .ic_playlist_like
-                        }
-                    )
             }
     }
 
@@ -331,6 +323,7 @@ class AudioPlayerFragment :
                 tvCurrentTime?.text =
                     state.currentTime
 
+                // PLAY / PAUSE
                 btnPlay
                     ?.setImageResource(
                         if (
@@ -346,11 +339,28 @@ class AudioPlayerFragment :
                                 .ic_playlist_play
                         }
                     )
+
+                // FAVORITE
+                btnLike
+                    ?.setImageResource(
+                        if (
+                            state.isFavorite
+                        ) {
+
+                            R.drawable
+                                .filled_like_icon
+
+                        } else {
+
+                            R.drawable
+                                .ic_playlist_like
+                        }
+                    )
             }
     }
 
     // =========================================================
-    // ADD TO PLAYLIST BOTTOM SHEET
+    // PLAYLIST BOTTOM SHEET
     // =========================================================
 
     private fun showPlaylistsBottomSheet(
@@ -407,18 +417,16 @@ class AudioPlayerFragment :
             adapter
 
         // =====================================================
-        // PLAYLIST LIST
+        // PLAYLISTS
         // =====================================================
 
         val playlistsObserver =
-            androidx.lifecycle
-                .Observer<List<Playlist>> { playlists ->
+            Observer<List<Playlist>> { playlists ->
 
-                    adapter
-                        .updatePlaylists(
-                            playlists
-                        )
-                }
+                adapter.updatePlaylists(
+                    playlists
+                )
+            }
 
         viewModel
             .observePlaylists()
@@ -428,20 +436,12 @@ class AudioPlayerFragment :
             )
 
         // =====================================================
-        // ONE-SHOT ADD RESULT
+        // ADD RESULT
         // =====================================================
 
         /*
-         * Collector существует ТОЛЬКО,
-         * пока открыт этот Bottom Sheet.
-         *
-         * Если пользователь закрыл окно,
-         * Job отменяется.
-         *
-         * SharedFlow имеет replay = 0,
-         * поэтому результат операции,
-         * закончившейся после закрытия окна,
-         * не попадёт в следующее открытие.
+         * Collector работает только пока
+         * открыт конкретный BottomSheet.
          */
         val addResultJob:
                 Job =
@@ -471,10 +471,6 @@ class AudioPlayerFragment :
                                 Toast.LENGTH_SHORT
                             ).show()
 
-                            /*
-                             * После результата
-                             * закрываем Bottom Sheet.
-                             */
                             if (
                                 dialog.isShowing
                             ) {
@@ -505,16 +501,12 @@ class AudioPlayerFragment :
             }
 
         // =====================================================
-        // ON DISMISS
+        // DISMISS
         // =====================================================
 
         dialog
             .setOnDismissListener {
 
-                /*
-                 * Observer списка больше
-                 * не нужен после закрытия.
-                 */
                 viewModel
                     .observePlaylists()
                     .removeObserver(
@@ -522,15 +514,11 @@ class AudioPlayerFragment :
                     )
 
                 /*
-                 * Самое важное:
-                 * отменяем collector результата.
+                 * Не оставляем collector
+                 * после закрытия BottomSheet.
                  */
                 addResultJob.cancel()
             }
-
-        // =====================================================
-        // SHOW
-        // =====================================================
 
         dialog.show()
     }
@@ -547,7 +535,7 @@ class AudioPlayerFragment :
     }
 
     // =========================================================
-    // DESTROY VIEW
+    // CLEANUP
     // =========================================================
 
     override fun onDestroyView() {

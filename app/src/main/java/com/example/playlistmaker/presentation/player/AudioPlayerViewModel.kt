@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.playlistmaker.domain.models.Playlist
 import com.example.playlistmaker.domain.models.Track
 import com.example.playlistmaker.domain.playlists.PlaylistsInteractor
+import com.example.playlistmaker.domain.search.FavoriteTracksInteractor
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -15,9 +16,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class AudioPlayerViewModel(
     private val mediaPlayer: MediaPlayer,
+    private val favoriteTracksInteractor: FavoriteTracksInteractor,
     private val playlistsInteractor: PlaylistsInteractor
 ) : ViewModel() {
 
@@ -49,14 +53,16 @@ class AudioPlayerViewModel(
         playlistsLiveData
 
     // =========================================================
-    // ADD TRACK RESULT
-    //
-    // SharedFlow используется как одноразовое событие.
-    //
-    // replay = 0:
-    // старый результат НЕ будет отправлен новому observer.
+    // ADD TO PLAYLIST RESULT
     // =========================================================
 
+    /*
+     * Одноразовое событие.
+     *
+     * replay = 0 означает:
+     * старый результат не будет повторно
+     * отдан при следующем открытии BottomSheet.
+     */
     private val playlistAddResultFlow =
         MutableSharedFlow<PlaylistAddResult>(
             replay = 0,
@@ -69,18 +75,31 @@ class AudioPlayerViewModel(
             .asSharedFlow()
 
     // =========================================================
-    // TIMER
+    // FAVORITES
+    // =========================================================
+
+    /*
+     * Не позволяет двум быстрым нажатиям
+     * одновременно менять состояние избранного.
+     */
+    private val favoriteMutex =
+        Mutex()
+
+    private var currentTrack:
+            Track? = null
+
+    // =========================================================
+    // PLAYER
     // =========================================================
 
     private var timerJob:
             Job? = null
 
-    // =========================================================
-    // CURRENT TRACK URL
-    // =========================================================
-
     private var currentPreviewUrl:
             String? = null
+
+    private var preparedTrackId:
+            Long? = null
 
     // =========================================================
     // INIT
@@ -91,7 +110,142 @@ class AudioPlayerViewModel(
     }
 
     // =========================================================
-    // OBSERVE PLAYLISTS FROM ROOM
+    // INITIALIZE TRACK
+    // =========================================================
+
+    fun initialize(
+        track: Track
+    ) {
+
+        currentTrack =
+            track
+
+        /*
+         * Сразу показываем состояние,
+         * которое пришло вместе с Track,
+         * а затем дополнительно проверяем Room.
+         */
+        stateLiveData.value =
+            currentState().copy(
+                isFavorite =
+                    track.isFavorite
+            )
+
+        checkFavorite(
+            track.trackId
+        )
+
+        /*
+         * Один и тот же трек повторно
+         * в MediaPlayer не загружаем.
+         */
+        if (
+            preparedTrackId !=
+            track.trackId
+        ) {
+
+            preparedTrackId =
+                track.trackId
+
+            preparePlayer(
+                track.previewUrl
+            )
+        }
+    }
+
+    // =========================================================
+    // CHECK FAVORITE
+    // =========================================================
+
+    private fun checkFavorite(
+        trackId: Long
+    ) {
+
+        viewModelScope.launch {
+
+            val isFavorite =
+                favoriteTracksInteractor
+                    .isFavorite(
+                        trackId
+                    )
+
+            /*
+             * Проверяем, что пользователь
+             * всё ещё находится на этом треке.
+             */
+            if (
+                currentTrack?.trackId ==
+                trackId
+            ) {
+
+                stateLiveData.value =
+                    currentState().copy(
+                        isFavorite =
+                            isFavorite
+                    )
+            }
+        }
+    }
+
+    // =========================================================
+    // FAVORITE CLICK
+    // =========================================================
+
+    fun onFavoriteClicked() {
+
+        val track =
+            currentTrack
+                ?: return
+
+        viewModelScope.launch {
+
+            favoriteMutex.withLock {
+
+                /*
+                 * ВАЖНО:
+                 * актуальное значение берём из Room
+                 * непосредственно внутри coroutine.
+                 */
+                val isCurrentlyFavorite =
+                    favoriteTracksInteractor
+                        .isFavorite(
+                            track.trackId
+                        )
+
+                if (
+                    isCurrentlyFavorite
+                ) {
+
+                    favoriteTracksInteractor
+                        .removeTrack(
+                            track
+                        )
+
+                } else {
+
+                    favoriteTracksInteractor
+                        .addTrack(
+                            track
+                        )
+                }
+
+                if (
+                    currentTrack?.trackId ==
+                    track.trackId
+                ) {
+
+                    stateLiveData.value =
+                        currentState().copy(
+                            isFavorite =
+                                !isCurrentlyFavorite
+                        )
+                }
+            }
+        }
+    }
+
+    // =========================================================
+    // OBSERVE PLAYLISTS
     // =========================================================
 
     private fun observePlaylistsFromDatabase() {
@@ -126,19 +280,10 @@ class AudioPlayerViewModel(
                         playlist = playlist
                     )
 
-            /*
-             * Если в этот момент Bottom Sheet открыт,
-             * событие получит его collector.
-             *
-             * Если Bottom Sheet уже закрыт —
-             * событие не сохранится и не появится
-             * при следующем открытии.
-             */
             playlistAddResultFlow.emit(
                 PlaylistAddResult(
                     playlistName =
                         playlist.name,
-
                     isAdded =
                         isAdded
                 )
@@ -150,19 +295,23 @@ class AudioPlayerViewModel(
     // PREPARE PLAYER
     // =========================================================
 
-    fun preparePlayer(
+    private fun preparePlayer(
         previewUrl: String?
     ) {
 
         if (
             previewUrl.isNullOrBlank()
         ) {
+
+            preparedTrackId =
+                null
+
             return
         }
 
         /*
-         * Если этот же трек уже подготовлен,
-         * повторно setDataSource не вызываем.
+         * Если этот URL уже подготовлен,
+         * второй раз setDataSource не вызываем.
          */
         if (
             currentPreviewUrl ==
@@ -173,6 +322,10 @@ class AudioPlayerViewModel(
 
         stopTimer()
 
+        /*
+         * MediaPlayer должен вернуться
+         * в состояние Idle перед новым setDataSource.
+         */
         mediaPlayer.reset()
 
         playerState =
@@ -242,6 +395,9 @@ class AudioPlayerViewModel(
                 currentPreviewUrl =
                     null
 
+                preparedTrackId =
+                    null
+
                 stateLiveData.value =
                     currentState().copy(
                         isPlaying = false,
@@ -271,6 +427,9 @@ class AudioPlayerViewModel(
         ) {
 
             currentPreviewUrl =
+                null
+
+            preparedTrackId =
                 null
 
             playerState =
@@ -393,8 +552,7 @@ class AudioPlayerViewModel(
                             isPlaying = true,
                             currentTime =
                                 formatTime(
-                                    mediaPlayer
-                                        .currentPosition
+                                    mediaPlayer.currentPosition
                                 )
                         )
 
@@ -432,19 +590,19 @@ class AudioPlayerViewModel(
         timeMillis: Int
     ): String {
 
-        val seconds =
+        val totalSeconds =
             timeMillis / 1000
 
         val minutes =
-            seconds / 60
+            totalSeconds / 60
 
-        val remainingSeconds =
-            seconds % 60
+        val seconds =
+            totalSeconds % 60
 
         return String.format(
             "%02d:%02d",
             minutes,
-            remainingSeconds
+            seconds
         )
     }
 
@@ -476,6 +634,12 @@ class AudioPlayerViewModel(
         currentPreviewUrl =
             null
 
+        preparedTrackId =
+            null
+
+        currentTrack =
+            null
+
         super.onCleared()
     }
 
@@ -488,10 +652,6 @@ class AudioPlayerViewModel(
             "00:00"
     }
 }
-
-// =============================================================
-// ADD RESULT
-// =============================================================
 
 data class PlaylistAddResult(
     val playlistName: String,
