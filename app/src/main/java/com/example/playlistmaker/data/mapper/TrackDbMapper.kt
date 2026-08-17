@@ -5,7 +5,11 @@ import com.example.playlistmaker.domain.models.Track
 
 class TrackDbMapper {
 
-    fun map(track: Track): FavoriteTrackEntity {
+    fun map(
+        track: Track,
+        addedAt: Long
+    ): FavoriteTrackEntity {
+
         return FavoriteTrackEntity(
             trackId = track.trackId,
             trackName = track.trackName,
@@ -17,11 +21,14 @@ class TrackDbMapper {
             primaryGenreName = track.primaryGenreName,
             country = track.country,
             previewUrl = track.previewUrl,
-            addedAt = System.currentTimeMillis()
+            addedAt = addedAt
         )
     }
 
-    fun map(entity: FavoriteTrackEntity): Track {
+    fun map(
+        entity: FavoriteTrackEntity
+    ): Track {
+
         return Track(
             trackId = entity.trackId,
             trackName = entity.trackName,

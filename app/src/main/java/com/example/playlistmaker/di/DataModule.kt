@@ -5,10 +5,12 @@ import android.media.MediaPlayer
 import com.example.playlistmaker.data.network.ITunesApi
 import com.example.playlistmaker.data.network.RetrofitClient
 import com.example.playlistmaker.data.repository.FavoriteTracksRepositoryImpl
+import com.example.playlistmaker.data.repository.PlaylistsRepositoryImpl
 import com.example.playlistmaker.data.repository.SearchHistoryRepositoryImpl
 import com.example.playlistmaker.data.repository.SettingsRepositoryImpl
 import com.example.playlistmaker.data.repository.TracksRepositoryImpl
 import com.example.playlistmaker.domain.api.FavoriteTracksRepository
+import com.example.playlistmaker.domain.api.PlaylistsRepository
 import com.example.playlistmaker.domain.api.SearchHistoryRepository
 import com.example.playlistmaker.domain.api.SettingsRepository
 import com.example.playlistmaker.domain.api.TracksRepository
@@ -18,20 +20,37 @@ import org.koin.dsl.module
 
 val dataModule = module {
 
+    // =========================================================
+    // NETWORK
+    // =========================================================
+
     single<ITunesApi> {
         RetrofitClient.itunesApi
     }
+
+    // =========================================================
+    // GSON
+    // =========================================================
 
     single {
         Gson()
     }
 
+    // =========================================================
+    // SHARED PREFERENCES
+    // =========================================================
+
     single {
-        androidContext().getSharedPreferences(
-            "playlist_maker_prefs",
-            Context.MODE_PRIVATE
-        )
+        androidContext()
+            .getSharedPreferences(
+                "playlist_maker_prefs",
+                Context.MODE_PRIVATE
+            )
     }
+
+    // =========================================================
+    // TRACKS
+    // =========================================================
 
     single<TracksRepository> {
         TracksRepositoryImpl(
@@ -40,6 +59,10 @@ val dataModule = module {
         )
     }
 
+    // =========================================================
+    // SEARCH HISTORY
+    // =========================================================
+
     single<SearchHistoryRepository> {
         SearchHistoryRepositoryImpl(
             sharedPreferences = get(),
@@ -47,18 +70,42 @@ val dataModule = module {
         )
     }
 
+    // =========================================================
+    // SETTINGS
+    // =========================================================
+
     single<SettingsRepository> {
-        SettingsRepositoryImpl(get())
+        SettingsRepositoryImpl(
+            get()
+        )
     }
+
+    // =========================================================
+    // MEDIA PLAYER
+    // =========================================================
 
     factory {
         MediaPlayer()
     }
 
+    // =========================================================
+    // FAVORITES
+    // =========================================================
+
     single<FavoriteTracksRepository> {
         FavoriteTracksRepositoryImpl(
             favoriteTrackDao = get(),
             mapper = get()
+        )
+    }
+
+    // =========================================================
+    // PLAYLISTS
+    // =========================================================
+
+    single<PlaylistsRepository> {
+        PlaylistsRepositoryImpl(
+            playlistDao = get()
         )
     }
 }

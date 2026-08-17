@@ -7,19 +7,36 @@ class MediaLibraryPagerAdapter(
     fragment: Fragment
 ) : FragmentStateAdapter(fragment) {
 
-    override fun getItemCount(): Int = PAGE_COUNT
+    override fun getItemCount(): Int =
+        PAGE_COUNT
 
-    override fun createFragment(position: Int): Fragment {
+    override fun createFragment(
+        position: Int
+    ): Fragment {
+
         return when (position) {
-            0 -> FavoriteTracksFragment.newInstance()
-            1 -> PlaylistsFragment.newInstance()
-            else -> throw IllegalArgumentException(
-                "Unknown page position: $position"
-            )
+
+            FAVORITES_POSITION -> {
+                FavoriteTracksFragment.newInstance()
+            }
+
+            PLAYLISTS_POSITION -> {
+                PlaylistsFragment.newInstance()
+            }
+
+            else -> {
+                throw IllegalArgumentException(
+                    "Unknown ViewPager position: $position"
+                )
+            }
         }
     }
 
     companion object {
+
         private const val PAGE_COUNT = 2
+
+        private const val FAVORITES_POSITION = 0
+        private const val PLAYLISTS_POSITION = 1
     }
 }

@@ -4,12 +4,18 @@ import com.example.playlistmaker.presentation.medialibrary.FavoriteTracksViewMod
 import com.example.playlistmaker.presentation.medialibrary.MediaLibraryViewModel
 import com.example.playlistmaker.presentation.medialibrary.PlaylistsViewModel
 import com.example.playlistmaker.presentation.player.AudioPlayerViewModel
+import com.example.playlistmaker.presentation.playlist.CreatePlaylistViewModel
+import com.example.playlistmaker.presentation.playlist.PlaylistViewModel
 import com.example.playlistmaker.presentation.search.SearchViewModel
 import com.example.playlistmaker.presentation.settings.SettingsViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
+
+    // =========================================================
+    // SEARCH
+    // =========================================================
 
     viewModel {
         SearchViewModel(
@@ -18,22 +24,39 @@ val viewModelModule = module {
         )
     }
 
+    // =========================================================
+    // SETTINGS
+    // =========================================================
+
     viewModel {
         SettingsViewModel(
             settingsInteractor = get()
         )
     }
 
+    // =========================================================
+    // AUDIO PLAYER
+    // =========================================================
+
     viewModel {
         AudioPlayerViewModel(
             mediaPlayer = get(),
-            favoriteTracksInteractor = get()
+            favoriteTracksInteractor = get(),
+            playlistsInteractor = get()
         )
     }
+
+    // =========================================================
+    // MEDIA LIBRARY
+    // =========================================================
 
     viewModel {
         MediaLibraryViewModel()
     }
+
+    // =========================================================
+    // FAVORITES
+    // =========================================================
 
     viewModel {
         FavoriteTracksViewModel(
@@ -41,7 +64,33 @@ val viewModelModule = module {
         )
     }
 
+    // =========================================================
+    // PLAYLISTS
+    // =========================================================
+
     viewModel {
-        PlaylistsViewModel()
+        PlaylistsViewModel(
+            playlistsInteractor = get()
+        )
+    }
+
+    // =========================================================
+    // CREATE / EDIT PLAYLIST
+    // =========================================================
+
+    viewModel {
+        CreatePlaylistViewModel(
+            playlistsInteractor = get()
+        )
+    }
+
+    // =========================================================
+    // PLAYLIST DETAILS
+    // =========================================================
+
+    viewModel {
+        PlaylistViewModel(
+            playlistsInteractor = get()
+        )
     }
 }

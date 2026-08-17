@@ -50,5 +50,22 @@
 
     <color name="playlist_button_bg">#FFFFFF</color>
     <color name="playlist_button_text">#000000</color>
+    <color name="playlist_background">#1A1B22</color>
 
+    <color name="playlist_sheet_background">#1A1B22</color>
+
+    <color name="playlist_primary_text">#FFFFFF</color>
+
+    <color name="playlist_secondary_text">#AEAFB4</color>
+
+    <color name="playlist_icon">#FFFFFF</color>
+
+    <color name="playlist_accent">#3772E7</color>
+
+    <color name="playlist_divider">#2A2B30</color>
+    <color name="playlist_top_background">#1A1B22</color>
+    <color name="playlist_cover_background">#FFFFFF</color>
+    <color name="playlist_header_background">#FFFFFF</color>
+    <color name="playlist_header_text">#1A1B22</color>
+    <color name="playlist_header_icon">#1A1B22</color>
 </resources>
