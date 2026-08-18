@@ -15,11 +15,19 @@ class PlaylistBottomSheetAdapter(
     private val onPlaylistClick: (Playlist) -> Unit
 ) : RecyclerView.Adapter<PlaylistBottomSheetAdapter.PlaylistViewHolder>() {
 
-    private val playlists = mutableListOf<Playlist>()
+    private val playlists =
+        mutableListOf<Playlist>()
 
-    fun updatePlaylists(newPlaylists: List<Playlist>) {
+    fun updatePlaylists(
+        newPlaylists: List<Playlist>
+    ) {
+
         playlists.clear()
-        playlists.addAll(newPlaylists)
+
+        playlists.addAll(
+            newPlaylists
+        )
+
         notifyDataSetChanged()
     }
 
@@ -28,51 +36,73 @@ class PlaylistBottomSheetAdapter(
         viewType: Int
     ): PlaylistViewHolder {
 
-        val view = LayoutInflater
-            .from(parent.context)
-            .inflate(
-                R.layout.item_playlist_bottom_sheet,
-                parent,
-                false
-            )
+        val view =
+            LayoutInflater
+                .from(parent.context)
+                .inflate(
+                    R.layout.item_playlist_bottom_sheet,
+                    parent,
+                    false
+                )
 
-        return PlaylistViewHolder(view)
+        return PlaylistViewHolder(
+            view
+        )
     }
 
     override fun onBindViewHolder(
         holder: PlaylistViewHolder,
         position: Int
     ) {
-        holder.bind(playlists[position])
+
+        holder.bind(
+            playlists[position]
+        )
     }
 
-    override fun getItemCount(): Int = playlists.size
+    override fun getItemCount(): Int =
+        playlists.size
 
     inner class PlaylistViewHolder(
         itemView: View
-    ) : RecyclerView.ViewHolder(itemView) {
+    ) : RecyclerView.ViewHolder(
+        itemView
+    ) {
 
-        private val cover: ImageView =
-            itemView.findViewById(R.id.ivPlaylistCover)
+        private val cover =
+            itemView.findViewById<ImageView>(
+                R.id.ivPlaylistCover
+            )
 
-        private val name: TextView =
-            itemView.findViewById(R.id.tvPlaylistName)
+        private val name =
+            itemView.findViewById<TextView>(
+                R.id.tvPlaylistName
+            )
 
-        private val count: TextView =
-            itemView.findViewById(R.id.tvTracksCount)
+        private val count =
+            itemView.findViewById<TextView>(
+                R.id.tvTracksCount
+            )
 
-        fun bind(playlist: Playlist) {
+        fun bind(
+            playlist: Playlist
+        ) {
 
-            name.text = playlist.name
+            name.text =
+                playlist.name
 
             count.text =
-                itemView.resources.getQuantityString(
-                    R.plurals.tracks_count,
-                    playlist.tracksCount,
-                    playlist.tracksCount
-                )
+                itemView.resources
+                    .getQuantityString(
+                        R.plurals.tracks_count,
+                        playlist.tracksCount,
+                        playlist.tracksCount
+                    )
 
-            if (playlist.imagePath.isNullOrBlank()) {
+            if (
+                playlist.imagePath
+                    .isNullOrBlank()
+            ) {
 
                 cover.setImageResource(
                     R.drawable.ic_placeholder
@@ -82,7 +112,9 @@ class PlaylistBottomSheetAdapter(
 
                 Glide.with(itemView)
                     .load(
-                        File(playlist.imagePath)
+                        File(
+                            playlist.imagePath
+                        )
                     )
                     .placeholder(
                         R.drawable.ic_placeholder
@@ -90,7 +122,21 @@ class PlaylistBottomSheetAdapter(
                     .error(
                         R.drawable.ic_placeholder
                     )
-                    .into(cover)
+                    .into(
+                        cover
+                    )
+            }
+
+            // =============================================
+            // ВАЖНО:
+            // нажатие на плейлист
+            // =============================================
+
+            itemView.setOnClickListener {
+
+                onPlaylistClick(
+                    playlist
+                )
             }
         }
     }

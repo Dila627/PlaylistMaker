@@ -14,35 +14,63 @@ class PlaylistViewModel(
     private val playlistsInteractor: PlaylistsInteractor
 ) : ViewModel() {
 
+    // =========================================================
+    // PLAYLIST
+    // =========================================================
+
     private val playlistLiveData =
         MutableLiveData<Playlist?>()
 
-    fun observePlaylist(): LiveData<Playlist?> =
+    fun observePlaylist():
+            LiveData<Playlist?> =
         playlistLiveData
 
-    private val tracksLiveData =
-        MutableLiveData<List<Track>>(emptyList())
+    // =========================================================
+    // TRACKS
+    // =========================================================
 
-    fun observeTracks(): LiveData<List<Track>> =
+    private val tracksLiveData =
+        MutableLiveData<List<Track>>(
+            emptyList()
+        )
+
+    fun observeTracks():
+            LiveData<List<Track>> =
         tracksLiveData
 
+    // =========================================================
+    // DELETE PLAYLIST EVENT
+    // =========================================================
 
     private val playlistDeletedLiveData =
         MutableLiveData(false)
 
-    fun observePlaylistDeleted(): LiveData<Boolean> =
+    fun observePlaylistDeleted():
+            LiveData<Boolean> =
         playlistDeletedLiveData
 
-    private var playlistJob: Job? = null
+    // =========================================================
+    // DATA
+    // =========================================================
 
-    private var currentPlaylistId: Long =
+    private var playlistJob:
+            Job? = null
+
+    private var currentPlaylistId =
         INVALID_PLAYLIST_ID
+
+    // =========================================================
+    // LOAD PLAYLIST
+    // =========================================================
 
     fun loadPlaylist(
         playlistId: Long
     ) {
 
-        if (playlistId < 0) {
+        if (
+            playlistId <
+            0
+        ) {
             return
         }
 
@@ -65,62 +93,94 @@ class PlaylistViewModel(
                     }
             }
 
-        loadTracks(
-            playlistId
-        )
+        viewModelScope.launch {
+
+            refreshTracks(
+                playlistId
+            )
+        }
     }
 
-    private fun loadTracks(
+    // =========================================================
+    // REFRESH TRACKS
+    // =========================================================
+
+    /*
+     * Теперь этот метод НЕ запускает
+     * дополнительную coroutine.
+     *
+     * Вызывающий код ждёт получения
+     * нового списка треков.
+     */
+    private suspend fun refreshTracks(
         playlistId: Long
     ) {
 
-        if (playlistId < 0) {
+        if (
+            playlistId <
+            0
+        ) {
             return
         }
 
-        viewModelScope.launch {
+        val tracks =
+            playlistsInteractor
+                .getPlaylistTracks(
+                    playlistId
+                )
 
-            val tracks =
-                playlistsInteractor
-                    .getPlaylistTracks(
-                        playlistId
-                    )
-
-            tracksLiveData.value =
-                tracks
-        }
+        tracksLiveData.value =
+            tracks
     }
 
+    // =========================================================
+    // DELETE TRACK
+    // =========================================================
 
     fun deleteTrack(
         track: Track
     ) {
 
-        if (currentPlaylistId < 0) {
+        val playlistId =
+            currentPlaylistId
+
+        if (
+            playlistId <
+            0
+        ) {
             return
         }
 
         viewModelScope.launch {
 
+            // Сначала реально удаляем из Room.
             playlistsInteractor
                 .deleteTrackFromPlaylist(
-                    playlistId =
-                        currentPlaylistId,
-                    trackId =
-                        track.trackId
+                    playlistId = playlistId,
+                    trackId = track.trackId
                 )
 
-
-            loadTracks(
-                currentPlaylistId
+            // И только ПОСЛЕ завершения удаления
+            // снова читаем список из Room.
+            refreshTracks(
+                playlistId
             )
         }
     }
 
+    // =========================================================
+    // DELETE PLAYLIST
+    // =========================================================
 
     fun deletePlaylist() {
 
-        if (currentPlaylistId < 0) {
+        val playlistId =
+            currentPlaylistId
+
+        if (
+            playlistId <
+            0
+        ) {
             return
         }
 
@@ -128,7 +188,7 @@ class PlaylistViewModel(
 
             playlistsInteractor
                 .deletePlaylist(
-                    currentPlaylistId
+                    playlistId
                 )
 
             playlistDeletedLiveData.value =
@@ -136,14 +196,24 @@ class PlaylistViewModel(
         }
     }
 
+    // =========================================================
+    // DELETE EVENT HANDLED
+    // =========================================================
 
     fun playlistDeletedHandled() {
+
         playlistDeletedLiveData.value =
             false
     }
 
+    // =========================================================
+    // CLEAR
+    // =========================================================
+
     override fun onCleared() {
+
         playlistJob?.cancel()
+
         super.onCleared()
     }
 
