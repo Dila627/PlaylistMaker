@@ -14,6 +14,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -24,6 +25,7 @@ import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.models.Playlist
 import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.presentation.medialibrary.MediaLibraryFragment
 import com.example.playlistmaker.presentation.player.AudioPlayerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -114,6 +116,11 @@ class PlaylistFragment :
                 R.id.rvPlaylistTracks
             )
 
+        val tvEmptyTracks =
+            view.findViewById<TextView>(
+                R.id.tvEmptyTracks
+            )
+
         val tracksBottomSheet =
             view.findViewById<View>(
                 R.id.playlistTracksBottomSheet
@@ -173,13 +180,33 @@ class PlaylistFragment :
             tracksAdapter
 
         // =====================================================
-        // BACK
+        // BACK BUTTON
         // =====================================================
 
         btnBack.setOnClickListener {
 
             returnToMediaLibrary()
         }
+
+        // =====================================================
+        // SYSTEM BACK / GESTURE
+        // =====================================================
+
+        requireActivity()
+            .onBackPressedDispatcher
+            .addCallback(
+                viewLifecycleOwner,
+                object :
+                    OnBackPressedCallback(
+                        true
+                    ) {
+
+                    override fun handleOnBackPressed() {
+
+                        returnToMediaLibrary()
+                    }
+                }
+            )
 
         // =====================================================
         // PLAYLIST
@@ -212,10 +239,6 @@ class PlaylistFragment :
 
                 updatePlaylistInfo()
 
-                // =============================================
-                // COVER
-                // =============================================
-
                 showPlaylistCover(
                     imageView = ivPlaylistCover,
                     imagePath = playlist.imagePath
@@ -239,6 +262,15 @@ class PlaylistFragment :
                     ?.updateTracks(
                         tracks
                     )
+
+                val isEmpty =
+                    tracks.isEmpty()
+
+                tvEmptyTracks.isVisible =
+                    isEmpty
+
+                recyclerView.isVisible =
+                    !isEmpty
 
                 updatePlaylistInfo()
             }
@@ -364,6 +396,20 @@ class PlaylistFragment :
         val navController =
             findNavController()
 
+        /*
+         * Говорим MediaLibraryFragment,
+         * что после возврата нужно открыть
+         * вкладку "Плейлисты".
+         */
+        navController
+            .previousBackStackEntry
+            ?.savedStateHandle
+            ?.set(
+                MediaLibraryFragment
+                    .OPEN_PLAYLISTS_TAB_KEY,
+                true
+            )
+
         val wasPopped =
             navController
                 .popBackStack(
@@ -375,7 +421,8 @@ class PlaylistFragment :
             !wasPopped &&
             navController
                 .currentDestination
-                ?.id != R.id.mediaLibraryFragment
+                ?.id !=
+            R.id.mediaLibraryFragment
         ) {
 
             navController.navigate(
@@ -513,11 +560,9 @@ class PlaylistFragment :
 
         tracksCount.text =
             getTracksCountText(
-                playlist.tracksCount
+                currentTracks.size
             )
 
-        // Здесь тоже File(imagePath),
-        // а не Uri.parse(imagePath)
         showPlaylistCover(
             imageView = playlistCover,
             imagePath = playlist.imagePath
@@ -644,9 +689,7 @@ class PlaylistFragment :
 
             dialog.dismiss()
 
-            showDeletePlaylistDialog(
-                playlist
-            )
+            showDeletePlaylistDialog()
         }
 
         // =====================================================
@@ -672,9 +715,7 @@ class PlaylistFragment :
     // DELETE PLAYLIST DIALOG
     // =========================================================
 
-    private fun showDeletePlaylistDialog(
-        playlist: Playlist
-    ) {
+    private fun showDeletePlaylistDialog() {
 
         val dialog =
             Dialog(
@@ -683,7 +724,7 @@ class PlaylistFragment :
 
         val dialogView =
             layoutInflater.inflate(
-                R.layout.dialog_confirm_delete,
+                R.layout.dialog_delete_playlist,
                 null
             )
 
@@ -691,33 +732,22 @@ class PlaylistFragment :
             dialogView
         )
 
-        val message =
+        val btnCancel =
             dialogView.findViewById<TextView>(
-                R.id.tvDialogMessage
+                R.id.btnDialogCancel
             )
 
-        val btnNo =
+        val btnDelete =
             dialogView.findViewById<TextView>(
-                R.id.btnDialogNo
+                R.id.btnDialogDelete
             )
 
-        val btnYes =
-            dialogView.findViewById<TextView>(
-                R.id.btnDialogYes
-            )
-
-        message.text =
-            getString(
-                R.string.delete_playlist_question,
-                playlist.name
-            )
-
-        btnNo.setOnClickListener {
+        btnCancel.setOnClickListener {
 
             dialog.dismiss()
         }
 
-        btnYes.setOnClickListener {
+        btnDelete.setOnClickListener {
 
             viewModel.deletePlaylist()
 
@@ -726,16 +756,48 @@ class PlaylistFragment :
 
         dialog.setOnShowListener {
 
-            configureConfirmDialog(
-                dialog
-            )
+            dialog.window
+                ?.apply {
+
+                    setBackgroundDrawable(
+                        ColorDrawable(
+                            Color.TRANSPARENT
+                        )
+                    )
+
+                    setGravity(
+                        Gravity.CENTER
+                    )
+
+                    addFlags(
+                        WindowManager
+                            .LayoutParams
+                            .FLAG_DIM_BEHIND
+                    )
+
+                    attributes =
+                        attributes.apply {
+
+                            dimAmount =
+                                DIALOG_DIM_AMOUNT
+                        }
+
+                    setLayout(
+                        WindowManager
+                            .LayoutParams
+                            .WRAP_CONTENT,
+                        WindowManager
+                            .LayoutParams
+                            .WRAP_CONTENT
+                    )
+                }
         }
 
         dialog.show()
     }
 
     // =========================================================
-    // CONFIRM DIALOG STYLE
+    // TRACK DELETE DIALOG STYLE
     // =========================================================
 
     private fun configureConfirmDialog(
@@ -780,12 +842,16 @@ class PlaylistFragment :
     }
 
     // =========================================================
-    // SHARE
+    // SHARE PLAYLIST
     // =========================================================
 
     private fun sharePlaylist(
         playlist: Playlist
     ) {
+
+        // =====================================================
+        // EMPTY PLAYLIST
+        // =====================================================
 
         if (
             currentTracks.isEmpty()
@@ -802,13 +868,19 @@ class PlaylistFragment :
             return
         }
 
+        // =====================================================
+        // SHARE TEXT
+        // =====================================================
+
         val shareText =
             buildString {
 
+                // Playlist name
                 append(
                     playlist.name
                 )
 
+                // Description
                 if (
                     !playlist.description
                         .isNullOrBlank()
@@ -821,6 +893,7 @@ class PlaylistFragment :
                     )
                 }
 
+                // Tracks count
                 append("\n")
 
                 append(
@@ -831,6 +904,7 @@ class PlaylistFragment :
 
                 append("\n\n")
 
+                // Tracks
                 currentTracks
                     .forEachIndexed {
                             index,
@@ -860,6 +934,10 @@ class PlaylistFragment :
                         }
                     }
             }
+
+        // =====================================================
+        // ACTION SEND
+        // =====================================================
 
         val shareIntent =
             Intent(
@@ -893,27 +971,25 @@ class PlaylistFragment :
             tvTracksCount
                 ?: return
 
-        /*
-         * Пока список треков ещё не загрузился,
-         * отображаем хотя бы сохранённый
-         * tracksCount из Playlist.
-         */
+        // =====================================================
+        // EMPTY
+        // =====================================================
+
         if (
             currentTracks.isEmpty()
         ) {
 
-            val count =
-                currentPlaylist
-                    ?.tracksCount
-                    ?: 0
-
             textView.text =
                 getTracksCountText(
-                    count
+                    0
                 )
 
             return
         }
+
+        // =====================================================
+        // TOTAL DURATION
+        // =====================================================
 
         val totalMilliseconds =
             currentTracks.sumOf { track ->
@@ -933,7 +1009,7 @@ class PlaylistFragment :
     }
 
     // =========================================================
-    // PLURALS: TRACKS
+    // TRACKS PLURAL
     // =========================================================
 
     private fun getTracksCountText(
@@ -949,7 +1025,7 @@ class PlaylistFragment :
     }
 
     // =========================================================
-    // PLURALS: MINUTES
+    // MINUTES PLURAL
     // =========================================================
 
     private fun getMinutesText(

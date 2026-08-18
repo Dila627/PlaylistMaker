@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,7 +48,7 @@ class CreatePlaylistFragment :
 
     /*
      * Если playlistId != -1,
-     * значит экран открыт для редактирования.
+     * экран открыт в режиме редактирования.
      */
     private var playlistId: Long =
         INVALID_PLAYLIST_ID
@@ -56,24 +57,21 @@ class CreatePlaylistFragment :
         false
 
     /*
-     * Если пользователь пришёл сюда
-     * из AudioPlayerFragment через
-     * "Новый плейлист",
-     * здесь будет текущая песня.
+     * Используется при создании
+     * плейлиста из AudioPlayer.
      */
     private var trackToAdd: Track? =
         null
 
     /*
-     * Защита от повторного заполнения
-     * полей при повторной эмиссии Flow.
+     * Не даём повторной эмиссии Flow
+     * снова перезаписать введённые данные.
      */
     private var formInitialized =
         false
 
     // =========================================================
-    // ИСХОДНЫЕ ДАННЫЕ
-    // Нужны для проверки несохранённых изменений
+    // INITIAL VALUES
     // =========================================================
 
     private var initialName =
@@ -94,12 +92,19 @@ class CreatePlaylistFragment :
             ActivityResultContracts.GetContent()
         ) { uri ->
 
-            if (uri != null) {
+            if (uri == null) {
+                return@registerForActivityResult
+            }
+
+            val copiedImagePath =
+                copyImageToPrivateStorage(
+                    uri
+                )
+
+            if (copiedImagePath != null) {
 
                 selectedImagePath =
-                    copyImageToPrivateStorage(
-                        uri
-                    )
+                    copiedImagePath
 
                 showSelectedImage()
             }
@@ -113,6 +118,7 @@ class CreatePlaylistFragment :
         view: View,
         savedInstanceState: Bundle?
     ) {
+
         super.onViewCreated(
             view,
             savedInstanceState
@@ -129,11 +135,6 @@ class CreatePlaylistFragment :
                 )
                 ?: INVALID_PLAYLIST_ID
 
-        /*
-         * Трек будет не null,
-         * только если мы пришли
-         * из AudioPlayerFragment.
-         */
         trackToAdd =
             arguments
                 ?.getSerializable(
@@ -151,6 +152,11 @@ class CreatePlaylistFragment :
         val btnBack =
             view.findViewById<ImageView>(
                 R.id.btnBack
+            )
+
+        val tvTitle =
+            view.findViewById<TextView>(
+                R.id.tvTitle
             )
 
         ivCover =
@@ -174,7 +180,25 @@ class CreatePlaylistFragment :
             )
 
         // =====================================================
-        // CREATE / SAVE
+        // TITLE
+        // =====================================================
+
+        tvTitle.text =
+            if (isEditMode) {
+
+                getString(
+                    R.string.edit_playlist_title
+                )
+
+            } else {
+
+                getString(
+                    R.string.new_playlist
+                )
+            }
+
+        // =====================================================
+        // BUTTON TEXT
         // =====================================================
 
         btnCreate?.text =
@@ -192,7 +216,7 @@ class CreatePlaylistFragment :
             }
 
         // =====================================================
-        // ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ
+        // RESTORE / LOAD
         // =====================================================
 
         when {
@@ -235,36 +259,39 @@ class CreatePlaylistFragment :
         }
 
         // =====================================================
-        // НАЗВАНИЕ
+        // NAME
         // =====================================================
 
-        etName?.doAfterTextChanged {
+        etName
+            ?.doAfterTextChanged {
 
-            updateCreateButton()
-        }
-
-        // =====================================================
-        // ОБЛОЖКА
-        // =====================================================
-
-        ivCover?.setOnClickListener {
-
-            imagePicker.launch(
-                "image/*"
-            )
-        }
+                updateCreateButton()
+            }
 
         // =====================================================
-        // СОЗДАТЬ / СОХРАНИТЬ
+        // COVER
         // =====================================================
 
-        btnCreate?.setOnClickListener {
+        ivCover
+            ?.setOnClickListener {
 
-            savePlaylist()
-        }
+                imagePicker.launch(
+                    "image/*"
+                )
+            }
 
         // =====================================================
-        // НАЗАД
+        // CREATE / SAVE
+        // =====================================================
+
+        btnCreate
+            ?.setOnClickListener {
+
+                savePlaylist()
+            }
+
+        // =====================================================
+        // BACK BUTTON
         // =====================================================
 
         btnBack.setOnClickListener {
@@ -273,7 +300,7 @@ class CreatePlaylistFragment :
         }
 
         // =====================================================
-        // СИСТЕМНАЯ КНОПКА BACK
+        // SYSTEM BACK / GESTURE
         // =====================================================
 
         requireActivity()
@@ -294,7 +321,7 @@ class CreatePlaylistFragment :
     }
 
     // =========================================================
-    // ЗАГРУЗКА СУЩЕСТВУЮЩЕГО ПЛЕЙЛИСТА
+    // OBSERVE PLAYLIST
     // =========================================================
 
     private fun observePlaylist() {
@@ -312,7 +339,9 @@ class CreatePlaylistFragment :
                     return@observe
                 }
 
-                // Исходные данные
+                // =================================================
+                // ORIGINAL VALUES
+                // =================================================
 
                 initialName =
                     playlist.name
@@ -324,19 +353,23 @@ class CreatePlaylistFragment :
                 initialImagePath =
                     playlist.imagePath
 
-                // Текущие данные
+                // =================================================
+                // CURRENT VALUES
+                // =================================================
 
                 selectedImagePath =
                     playlist.imagePath
 
-                etName?.setText(
-                    playlist.name
-                )
+                etName
+                    ?.setText(
+                        playlist.name
+                    )
 
-                etDescription?.setText(
-                    playlist.description
-                        .orEmpty()
-                )
+                etDescription
+                    ?.setText(
+                        playlist.description
+                            .orEmpty()
+                    )
 
                 showSelectedImage()
 
@@ -396,39 +429,60 @@ class CreatePlaylistFragment :
     ) {
 
         viewModel.createPlaylist(
+
             name = name,
-            description = description,
-            imagePath = selectedImagePath,
 
-            /*
-             * Если сюда пришли из AudioPlayer,
-             * передаём выбранную песню.
-             *
-             * Если пришли из Media Library,
-             * trackToAdd == null.
-             */
-            trackToAdd = trackToAdd
-        ) {
+            description =
+                description,
 
-            Toast.makeText(
-                requireContext(),
-                getString(
-                    R.string.playlist_created,
-                    name
-                ),
-                Toast.LENGTH_SHORT
-            ).show()
+            imagePath =
+                selectedImagePath,
 
-            /*
-             * Если пришли из AudioPlayer,
-             * вернёмся обратно в AudioPlayer.
-             *
-             * Если из Media Library —
-             * вернёмся в список плейлистов.
-             */
-            findNavController()
-                .popBackStack()
-        }
+            trackToAdd =
+                trackToAdd,
+
+            // =================================================
+            // DUPLICATE NAME
+            // =================================================
+
+            onNameExists = {
+
+                if (!isAdded) {
+                    return@createPlaylist
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    getString(
+                        R.string.playlist_name_exists
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+
+            // =================================================
+            // CREATED
+            // =================================================
+
+            onCreated = {
+
+                if (!isAdded) {
+                    return@createPlaylist
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    getString(
+                        R.string.playlist_created,
+                        name
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                findNavController()
+                    .popBackStack()
+            }
+        )
     }
 
     // =========================================================
@@ -441,28 +495,69 @@ class CreatePlaylistFragment :
     ) {
 
         viewModel.updatePlaylist(
-            playlistId = playlistId,
-            name = name,
-            description = description,
-            imagePath = selectedImagePath
-        ) {
 
-            Toast.makeText(
-                requireContext(),
-                getString(
-                    R.string.playlist_saved,
-                    name
-                ),
-                Toast.LENGTH_SHORT
-            ).show()
+            playlistId =
+                playlistId,
 
-            findNavController()
-                .popBackStack()
-        }
+            name =
+                name,
+
+            description =
+                description,
+
+            imagePath =
+                selectedImagePath,
+
+            // =================================================
+            // DUPLICATE NAME
+            // =================================================
+
+            onNameExists = {
+
+                if (!isAdded) {
+                    return@updatePlaylist
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    getString(
+                        R.string.playlist_name_exists
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+
+            // =================================================
+            // UPDATED
+            // =================================================
+
+            onUpdated = {
+
+                if (!isAdded) {
+                    return@updatePlaylist
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    getString(
+                        R.string.playlist_saved,
+                        name
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                /*
+                 * Возвращаемся на экран
+                 * этого же плейлиста.
+                 */
+                findNavController()
+                    .popBackStack()
+            }
+        )
     }
 
     // =========================================================
-    // CREATE BUTTON STATE
+    // BUTTON STATE
     // =========================================================
 
     private fun updateCreateButton() {
@@ -472,9 +567,11 @@ class CreatePlaylistFragment :
                 ?.text
                 ?.toString()
                 ?.trim()
-                ?.isNotEmpty() == true
+                ?.isNotEmpty() ==
+                    true
 
-        btnCreate?.isEnabled =
+        btnCreate
+            ?.isEnabled =
             isEnabled
 
         btnCreate
@@ -497,22 +594,39 @@ class CreatePlaylistFragment :
     }
 
     // =========================================================
-    // SHOW IMAGE
+    // SHOW SELECTED IMAGE
     // =========================================================
 
     private fun showSelectedImage() {
-
-        val path =
-            selectedImagePath
-                ?: return
 
         val cover =
             ivCover
                 ?: return
 
+        val path =
+            selectedImagePath
+
+        /*
+         * Если обложки нет —
+         * показываем стандартную кнопку
+         * добавления обложки.
+         */
+        if (
+            path.isNullOrBlank()
+        ) {
+
+            cover.scaleType =
+                ImageView.ScaleType.CENTER
+
+            cover.setImageResource(
+                R.drawable.ic_add_playlist_cover
+            )
+
+            return
+        }
+
         cover.scaleType =
-            ImageView.ScaleType
-                .CENTER_CROP
+            ImageView.ScaleType.CENTER_CROP
 
         Glide.with(this)
             .load(
@@ -535,6 +649,25 @@ class CreatePlaylistFragment :
 
     private fun handleBackPressed() {
 
+        /*
+         * Sprint 23:
+         *
+         * В режиме редактирования
+         * несохранённые изменения просто
+         * отменяются.
+         */
+        if (isEditMode) {
+
+            findNavController()
+                .popBackStack()
+
+            return
+        }
+
+        /*
+         * Для создания нового плейлиста
+         * сохраняем старое поведение.
+         */
         if (
             hasUnsavedData()
         ) {
@@ -592,42 +725,18 @@ class CreatePlaylistFragment :
 
     private fun showExitDialog() {
 
-        val title =
-            if (isEditMode) {
-
-                getString(
-                    R.string.finish_playlist_editing
-                )
-
-            } else {
-
-                getString(
-                    R.string.finish_playlist_creation
-                )
-            }
-
-        val message =
-            if (isEditMode) {
-
-                getString(
-                    R.string.unsaved_playlist_changes
-                )
-
-            } else {
-
-                getString(
-                    R.string.unsaved_playlist_data
-                )
-            }
-
         AlertDialog.Builder(
             requireContext()
         )
             .setTitle(
-                title
+                getString(
+                    R.string.finish_playlist_creation
+                )
             )
             .setMessage(
-                message
+                getString(
+                    R.string.unsaved_playlist_data
+                )
             )
             .setNegativeButton(
                 getString(
@@ -648,7 +757,7 @@ class CreatePlaylistFragment :
     }
 
     // =========================================================
-    // COPY IMAGE TO PRIVATE STORAGE
+    // COPY IMAGE
     // =========================================================
 
     private fun copyImageToPrivateStorage(
@@ -714,6 +823,7 @@ class CreatePlaylistFragment :
     override fun onSaveInstanceState(
         outState: Bundle
     ) {
+
         super.onSaveInstanceState(
             outState
         )
@@ -789,21 +899,23 @@ class CreatePlaylistFragment :
                     KEY_INITIAL_IMAGE_PATH
                 )
 
-        etName?.setText(
-            savedInstanceState
-                .getString(
-                    KEY_NAME
-                )
-                .orEmpty()
-        )
+        etName
+            ?.setText(
+                savedInstanceState
+                    .getString(
+                        KEY_NAME
+                    )
+                    .orEmpty()
+            )
 
-        etDescription?.setText(
-            savedInstanceState
-                .getString(
-                    KEY_DESCRIPTION
-                )
-                .orEmpty()
-        )
+        etDescription
+            ?.setText(
+                savedInstanceState
+                    .getString(
+                        KEY_DESCRIPTION
+                    )
+                    .orEmpty()
+            )
 
         showSelectedImage()
 
@@ -833,16 +945,11 @@ class CreatePlaylistFragment :
 
     companion object {
 
-        /*
-         * Для режима редактирования.
-         */
+        // Для режима редактирования
         const val PLAYLIST_ID_KEY =
             "playlistId"
 
-        /*
-         * Для передачи песни
-         * из AudioPlayerFragment.
-         */
+        // Для передачи трека из AudioPlayer
         const val TRACK_KEY =
             "trackToAdd"
 

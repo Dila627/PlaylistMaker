@@ -14,21 +14,36 @@ class CreatePlaylistViewModel(
     private val playlistsInteractor: PlaylistsInteractor
 ) : ViewModel() {
 
+    // =========================================================
+    // PLAYLIST
+    // =========================================================
+
     private val playlistLiveData =
         MutableLiveData<Playlist?>()
 
-    fun observePlaylist(): LiveData<Playlist?> =
+    fun observePlaylist():
+            LiveData<Playlist?> =
         playlistLiveData
 
     // =========================================================
-    // ЗАГРУЗКА ПЛЕЙЛИСТА ДЛЯ РЕДАКТИРОВАНИЯ
+    // SAVE PROTECTION
+    // =========================================================
+
+    private var operationInProgress =
+        false
+
+    // =========================================================
+    // LOAD PLAYLIST
     // =========================================================
 
     fun loadPlaylist(
         playlistId: Long
     ) {
 
-        if (playlistId < 0) {
+        if (
+            playlistId <
+            0
+        ) {
             return
         }
 
@@ -47,7 +62,44 @@ class CreatePlaylistViewModel(
     }
 
     // =========================================================
-    // СОЗДАНИЕ НОВОГО ПЛЕЙЛИСТА
+    // CHECK DUPLICATE NAME
+    // =========================================================
+
+    private suspend fun isPlaylistNameAlreadyUsed(
+        name: String,
+        excludedPlaylistId: Long? = null
+    ): Boolean {
+
+        val normalizedName =
+            name.trim()
+
+        val playlists =
+            playlistsInteractor
+                .getPlaylists()
+                .first()
+
+        return playlists.any { playlist ->
+
+            val isAnotherPlaylist =
+                excludedPlaylistId == null ||
+                        playlist.id !=
+                        excludedPlaylistId
+
+            val hasSameName =
+                playlist.name
+                    .trim()
+                    .equals(
+                        normalizedName,
+                        ignoreCase = true
+                    )
+
+            isAnotherPlaylist &&
+                    hasSameName
+        }
+    }
+
+    // =========================================================
+    // CREATE
     // =========================================================
 
     fun createPlaylist(
@@ -55,111 +107,213 @@ class CreatePlaylistViewModel(
         description: String,
         imagePath: String?,
         trackToAdd: Track? = null,
+        onNameExists: (() -> Unit)? = null,
         onCreated: (() -> Unit)? = null
     ) {
 
-        if (name.isBlank()) {
-            return
-        }
-
-        viewModelScope.launch {
-
-            // Создаём новый пустой плейлист
-            val playlist =
-                Playlist(
-                    id = 0,
-                    name = name.trim(),
-                    description =
-                        description
-                            .trim()
-                            .ifBlank { null },
-                    imagePath =
-                        imagePath,
-                    trackIds =
-                        emptyList(),
-                    tracksCount =
-                        0
-                )
-
-            // Room возвращает настоящий ID
-            // созданного плейлиста
-            val newPlaylistId =
-                playlistsInteractor
-                    .createPlaylist(
-                        playlist
-                    )
-
-            // Создаём объект уже
-            // с настоящим ID
-            val createdPlaylist =
-                playlist.copy(
-                    id = newPlaylistId
-                )
-
-            // =================================================
-            // ЕСЛИ ПРИШЛИ ИЗ AUDIO PLAYER
-            // =================================================
-
-            if (trackToAdd != null) {
-
-                playlistsInteractor
-                    .addTrackToPlaylist(
-                        track = trackToAdd,
-                        playlist = createdPlaylist
-                    )
-            }
-
-            onCreated?.invoke()
-        }
-    }
-
-    fun updatePlaylist(
-        playlistId: Long,
-        name: String,
-        description: String,
-        imagePath: String?,
-        onUpdated: (() -> Unit)? = null
-    ) {
+        val normalizedName =
+            name.trim()
 
         if (
-            playlistId < 0 ||
-            name.isBlank()
+            normalizedName.isBlank() ||
+            operationInProgress
         ) {
             return
         }
 
         viewModelScope.launch {
 
-            // Получаем существующий плейлист
-            val currentPlaylist =
-                playlistsInteractor
-                    .getPlaylistById(
-                        playlistId
+            operationInProgress =
+                true
+
+            try {
+
+                // =============================================
+                // DUPLICATE NAME
+                // =============================================
+
+                val nameAlreadyUsed =
+                    isPlaylistNameAlreadyUsed(
+                        normalizedName
                     )
-                    .first()
-                    ?: return@launch
 
+                if (
+                    nameAlreadyUsed
+                ) {
 
-            val updatedPlaylist =
-                currentPlaylist.copy(
-                    name =
-                        name.trim(),
+                    onNameExists?.invoke()
 
-                    description =
-                        description
-                            .trim()
-                            .ifBlank { null },
+                    return@launch
+                }
 
-                    imagePath =
-                        imagePath
-                )
+                // =============================================
+                // CREATE PLAYLIST
+                // =============================================
 
-            playlistsInteractor
-                .updatePlaylist(
-                    updatedPlaylist
-                )
+                val playlist =
+                    Playlist(
+                        id = 0,
+                        name = normalizedName,
+                        description =
+                            description
+                                .trim()
+                                .ifBlank {
+                                    null
+                                },
+                        imagePath =
+                            imagePath,
+                        trackIds =
+                            emptyList(),
+                        tracksCount =
+                            0
+                    )
 
-            onUpdated?.invoke()
+                val newPlaylistId =
+                    playlistsInteractor
+                        .createPlaylist(
+                            playlist
+                        )
+
+                if (
+                    newPlaylistId <=
+                    0
+                ) {
+                    return@launch
+                }
+
+                val createdPlaylist =
+                    playlist.copy(
+                        id =
+                            newPlaylistId
+                    )
+
+                // =============================================
+                // ADD TRACK IF CREATED FROM PLAYER
+                // =============================================
+
+                if (
+                    trackToAdd !=
+                    null
+                ) {
+
+                    playlistsInteractor
+                        .addTrackToPlaylist(
+                            track =
+                                trackToAdd,
+                            playlist =
+                                createdPlaylist
+                        )
+                }
+
+                onCreated?.invoke()
+
+            } finally {
+
+                operationInProgress =
+                    false
+            }
+        }
+    }
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
+    fun updatePlaylist(
+        playlistId: Long,
+        name: String,
+        description: String,
+        imagePath: String?,
+        onNameExists: (() -> Unit)? = null,
+        onUpdated: (() -> Unit)? = null
+    ) {
+
+        val normalizedName =
+            name.trim()
+
+        if (
+            playlistId <
+            0 ||
+            normalizedName.isBlank() ||
+            operationInProgress
+        ) {
+            return
+        }
+
+        viewModelScope.launch {
+
+            operationInProgress =
+                true
+
+            try {
+
+                // =============================================
+                // DUPLICATE NAME
+                // =============================================
+
+                /*
+                 * Свой собственный ID исключаем.
+                 *
+                 * То есть можно нажать "Сохранить",
+                 * не меняя название текущего плейлиста.
+                 *
+                 * Но название другого плейлиста
+                 * использовать нельзя.
+                 */
+                val nameAlreadyUsed =
+                    isPlaylistNameAlreadyUsed(
+                        name =
+                            normalizedName,
+                        excludedPlaylistId =
+                            playlistId
+                    )
+
+                if (
+                    nameAlreadyUsed
+                ) {
+
+                    onNameExists?.invoke()
+
+                    return@launch
+                }
+
+                val currentPlaylist =
+                    playlistsInteractor
+                        .getPlaylistById(
+                            playlistId
+                        )
+                        .first()
+                        ?: return@launch
+
+                val updatedPlaylist =
+                    currentPlaylist.copy(
+
+                        name =
+                            normalizedName,
+
+                        description =
+                            description
+                                .trim()
+                                .ifBlank {
+                                    null
+                                },
+
+                        imagePath =
+                            imagePath
+                    )
+
+                playlistsInteractor
+                    .updatePlaylist(
+                        updatedPlaylist
+                    )
+
+                onUpdated?.invoke()
+
+            } finally {
+
+                operationInProgress =
+                    false
+            }
         }
     }
 }

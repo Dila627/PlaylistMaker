@@ -3,6 +3,7 @@ package com.example.playlistmaker.presentation.medialibrary
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.example.playlistmaker.R
 import com.google.android.material.tabs.TabLayout
@@ -48,13 +49,6 @@ class MediaLibraryFragment :
         // ADAPTER
         // =====================================================
 
-        /*
-         * Передаём именно MediaLibraryFragment,
-         * а не Activity.
-         *
-         * Тогда страницы ViewPager являются
-         * дочерними Fragment этого экрана.
-         */
         viewPager?.adapter =
             MediaLibraryPagerAdapter(
                 this
@@ -73,7 +67,9 @@ class MediaLibraryFragment :
             ) { tab, position ->
 
                 tab.text =
-                    when (position) {
+                    when (
+                        position
+                    ) {
 
                         FAVORITES_POSITION -> {
 
@@ -93,6 +89,49 @@ class MediaLibraryFragment :
 
         tabLayoutMediator
             ?.attach()
+
+        // =====================================================
+        // RETURN FROM PLAYLIST
+        // =====================================================
+
+        /*
+         * Если мы вернулись именно
+         * с экрана конкретного плейлиста,
+         * открываем вкладку "Плейлисты".
+         */
+        val savedStateHandle =
+            findNavController()
+                .currentBackStackEntry
+                ?.savedStateHandle
+
+        val shouldOpenPlaylists =
+            savedStateHandle
+                ?.get<Boolean>(
+                    OPEN_PLAYLISTS_TAB_KEY
+                ) == true
+
+        if (
+            shouldOpenPlaylists
+        ) {
+
+            viewPager
+                ?.setCurrentItem(
+                    PLAYLISTS_POSITION,
+                    false
+                )
+
+            /*
+             * Сбрасываем флаг,
+             * чтобы при обычном открытии
+             * Медиатеки вкладка не переключалась
+             * автоматически.
+             */
+            savedStateHandle
+                ?.set(
+                    OPEN_PLAYLISTS_TAB_KEY,
+                    false
+                )
+        }
     }
 
     // =========================================================
@@ -119,8 +158,14 @@ class MediaLibraryFragment :
 
     companion object {
 
+        const val OPEN_PLAYLISTS_TAB_KEY =
+            "openPlaylistsTab"
+
         private const val FAVORITES_POSITION =
             0
+
+        private const val PLAYLISTS_POSITION =
+            1
 
         fun newInstance() =
             MediaLibraryFragment()

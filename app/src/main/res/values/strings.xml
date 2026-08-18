@@ -89,6 +89,8 @@
 
     <string name="playlist_saved">Плейлист %1$s сохранён</string>
 
+    <string name="empty_playlist_tracks">В этом плейлисте нет треков</string>
+
     <string name="playlist_share_empty">
     В этом плейлисте нет списка треков, которым можно поделиться
 </string>
@@ -100,7 +102,8 @@
     <string name="finish_playlist_editing">
     Завершить редактирование?
 </string>
-
+    <string name="delete_playlist_confirmation">Вы уверены, что хотите удалить этот плейлист?</string>
+    <string name="delete">Удалить</string>
     <string name="unsaved_playlist_data">
     Все несохраненные данные будут потеряны
 </string>
@@ -108,7 +111,8 @@
     <string name="unsaved_playlist_changes">
     Все несохранённые изменения будут потеряны
 </string>
-
+    <string name="edit_playlist_title">Редактировать</string>
+    <string name="playlist_name_exists">Плейлист с таким названием уже существует</string>
     <string name="cancel">Отмена</string>
 
     <string name="finish">Завершить</string>

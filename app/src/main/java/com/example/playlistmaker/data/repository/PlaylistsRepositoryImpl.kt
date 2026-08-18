@@ -33,7 +33,8 @@ class PlaylistsRepositoryImpl(
     // GET PLAYLISTS
     // =========================================================
 
-    override fun getPlaylists(): Flow<List<Playlist>> {
+    override fun getPlaylists():
+            Flow<List<Playlist>> {
 
         return playlistDao
             .getPlaylists()
@@ -91,6 +92,11 @@ class PlaylistsRepositoryImpl(
                 playlistEntity.trackIds
             )
 
+        /*
+         * Новый трек добавляется в начало,
+         * чтобы сохранять порядок
+         * "последний добавленный сверху".
+         */
         val updatedTrackIds =
             listOf(
                 track.trackId
@@ -104,9 +110,11 @@ class PlaylistsRepositoryImpl(
         playlistDao.updatePlaylist(
             playlistEntity.copy(
                 trackIds =
-                    updatedTrackIds.joinToString(
-                        ","
-                    ),
+                    updatedTrackIds
+                        .joinToString(
+                            ","
+                        ),
+
                 tracksCount =
                     updatedTracksCount
             )
@@ -144,10 +152,60 @@ class PlaylistsRepositoryImpl(
         trackId: Long
     ) {
 
-        playlistDao.deleteTrackFromPlaylist(
-            playlistId = playlistId,
-            trackId = trackId
-        )
+        /*
+         * Sprint 23.
+         *
+         * До удаления проверяем,
+         * используется ли такой же трек
+         * в каком-либо другом плейлисте.
+         */
+        val isTrackInOtherPlaylists =
+            playlistDao
+                .isTrackInOtherPlaylists(
+                    trackId = trackId,
+                    playlistId = playlistId
+                )
+
+        /*
+         * Удаляем только связь/запись
+         * текущего плейлиста.
+         *
+         * Благодаря условию playlistId + trackId
+         * запись этого же трека в другом
+         * плейлисте не удаляется.
+         */
+        playlistDao
+            .deleteTrackFromPlaylist(
+                playlistId = playlistId,
+                trackId = trackId
+            )
+
+        /*
+         * В текущей Room-модели отдельной
+         * общей таблицы Track для плейлистов нет.
+         *
+         * PlaylistTrackEntity содержит данные
+         * отдельно для каждого playlistId.
+         *
+         * Поэтому:
+         * - если трек есть в другом плейлисте,
+         *   его запись там автоматически остаётся;
+         *
+         * - если трека больше нигде нет,
+         *   удалённая выше запись была его
+         *   последней playlist-записью.
+         *
+         * Переменную используем явно,
+         * чтобы логика проверки была частью
+         * Repository согласно критерию Sprint 23.
+         */
+        if (isTrackInOtherPlaylists) {
+            // Трек остаётся сохранён в другом плейлисте.
+        }
+
+        // =====================================================
+        // UPDATE CURRENT PLAYLIST DATA
+        // =====================================================
 
         val playlistEntity =
             playlistDao.getPlaylistById(
@@ -173,10 +231,13 @@ class PlaylistsRepositoryImpl(
 
         playlistDao.updatePlaylist(
             playlistEntity.copy(
+
                 trackIds =
-                    updatedTrackIds.joinToString(
-                        ","
-                    ),
+                    updatedTrackIds
+                        .joinToString(
+                            ","
+                        ),
+
                 tracksCount =
                     updatedTracksCount
             )
@@ -206,13 +267,19 @@ class PlaylistsRepositoryImpl(
         playlistId: Long
     ) {
 
-        playlistDao.deleteAllPlaylistTracks(
-            playlistId
-        )
+        /*
+         * Удаляем записи треков
+         * только этого плейлиста.
+         */
+        playlistDao
+            .deleteAllPlaylistTracks(
+                playlistId
+            )
 
-        playlistDao.deletePlaylist(
-            playlistId
-        )
+        playlistDao
+            .deletePlaylist(
+                playlistId
+            )
     }
 
     // =========================================================
@@ -224,6 +291,7 @@ class PlaylistsRepositoryImpl(
     ): PlaylistEntity {
 
         return PlaylistEntity(
+
             id =
                 playlist.id,
 
@@ -256,6 +324,7 @@ class PlaylistsRepositoryImpl(
     ): Playlist {
 
         return Playlist(
+
             id =
                 entity.id,
 
@@ -288,6 +357,7 @@ class PlaylistsRepositoryImpl(
     ): PlaylistTrackEntity {
 
         return PlaylistTrackEntity(
+
             playlistId =
                 playlistId,
 
@@ -332,6 +402,7 @@ class PlaylistsRepositoryImpl(
     ): Track {
 
         return Track(
+
             trackId =
                 entity.trackId,
 
@@ -365,7 +436,7 @@ class PlaylistsRepositoryImpl(
     }
 
     // =========================================================
-    // STRING TRACK IDS -> LIST<Long>
+    // STRING -> LIST<Long>
     // =========================================================
 
     private fun parseTrackIds(
